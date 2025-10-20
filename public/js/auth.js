@@ -51,7 +51,7 @@ if (loginForm) {
 
       const company = { id: found.id, ...(found.data ? found.data() : found._document?.data) };
       // Salva no session
-      window.Session.save(company);
+      window.Session.save(company, 30);
       loginMessage.textContent = 'Autenticado. Redirecionando...';
       // redireciona pro painel
       setTimeout(() => {
