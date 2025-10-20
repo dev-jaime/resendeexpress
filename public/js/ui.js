@@ -4,10 +4,8 @@
 
 const UI = {
   init() {
-    // checa sessão
     const company = window.Session.load();
     if (!company) {
-      // não autenticado
       window.location.href = 'index.html';
       return;
     }
@@ -31,10 +29,10 @@ const UI = {
   },
 
   bind() {
-    this.menuButtons.forEach(btn => btn.addEventListener('click', (e) => {
-      const view = btn.dataset.view;
-      this.setView(view);
-    }));
+    this.menuButtons.forEach(btn =>
+      btn.addEventListener('click', () => this.setView(btn.dataset.view))
+    );
+
     this.logoutBtn.addEventListener('click', () => {
       window.Session.clear();
       window.location.href = 'index.html';
@@ -50,36 +48,36 @@ const UI = {
   setView(viewName) {
     this.view = viewName;
     this.pageTitleEl.textContent = viewLabel(viewName);
-    // limpa content e carrega
     this.content.innerHTML = '<div class="loading">Carregando...</div>';
+
     if (this.unsubscribe) {
-      this.unsubscribe(); // cancelar listener anterior
+      this.unsubscribe();
       this.unsubscribe = null;
     }
 
-    if (viewName === 'customers') {
-      this.loadCustomers();
-    } else if (viewName === 'products') {
-      this.loadProducts();
-    } else if (viewName === 'orders') {
-      this.loadOrders();
-    } else if (viewName === 'carts') {
-      this.loadCarts();
+    switch (viewName) {
+      case 'customers': this.loadCustomers(); break;
+      case 'products': this.loadProducts(); break;
+      case 'orders': this.loadOrders(); break;
+      case 'carts': this.loadCarts(); break;
     }
   },
 
-  // CUSTOMERS: CRUD completo
+  // =====================
+  // CUSTOMERS CRUD
+  // =====================
   loadCustomers() {
     const path = `${this.companyPath}/customers`;
-    // mostra UI de list + form
     this.content.innerHTML = `
       <div class="panel">
         <div class="panel-left" id="listPane"></div>
         <div class="panel-right" id="formPane"></div>
       </div>
     `;
-    this.renderCustomerForm(); // form vazio
-    this.unsubscribe = window.CRUD.subscribe(path, (arr) => {
+    this.panelEl = this.content.querySelector('.panel');
+    this.renderCustomerForm();
+
+    this.unsubscribe = window.CRUD.subscribe(path, arr => {
       this.renderCustomerList(arr);
     }, 'createdAt');
   },
@@ -87,290 +85,222 @@ const UI = {
   renderCustomerForm(data = null) {
     const formPane = document.getElementById('formPane');
     formPane.innerHTML = `
-        <h3>${data ? 'Editar cliente' : 'Novo cliente'}</h3>
-        <form id="customerForm" class="entity-form">
+      <h3>${data ? 'Editar cliente' : 'Novo cliente'}</h3>
+      <form id="customerForm" class="entity-form">
         <label>Nome</label><input name="name" required />
         <label>Telefone</label><input name="phone" />
         <label>CPF</label><input name="cpf" />
 
-        <fieldset class="address-group">
-            <legend>Endereço padrão</legend>
-            <label>Rua</label><input name="def_street" />
-            <label>Número</label><input type="number" name="def_number" />
-            <label>Bairro</label><input name="def_neighborhood" />
-            <label>Cidade</label><input name="def_city" />
-            <label>Estado</label><input name="def_state" />
-            <label>CEP</label><input name="def_zip" />
-        </fieldset>
-
-        <fieldset class="address-group">
-            <legend>Endereço alternativo</legend>
-            <label>Rua</label><input name="alt_street" />
-            <label>Número</label><input type="number" name="alt_number" />
-            <label>Bairro</label><input name="alt_neighborhood" />
-            <label>Cidade</label><input name="alt_city" />
-            <label>Estado</label><input name="alt_state" />
-            <label>CEP</label><input name="alt_zip" />
-        </fieldset>
-
-        <fieldset class="address-group">
-            <legend>Endereço de envio</legend>
-            <label>Rua</label><input name="ship_street" />
-            <label>Número</label><input type="number" name="ship_number" />
-            <label>Bairro</label><input name="ship_neighborhood" />
-            <label>Cidade</label><input name="ship_city" />
-            <label>Estado</label><input name="ship_state" />
-            <label>CEP</label><input name="ship_zip" />
-        </fieldset>
-
-        <fieldset class="address-group">
-            <legend>Endereço de cobrança</legend>
-            <label>Rua</label><input name="bill_street" />
-            <label>Número</label><input type="number" name="bill_number" />
-            <label>Bairro</label><input name="bill_neighborhood" />
-            <label>Cidade</label><input name="bill_city" />
-            <label>Estado</label><input name="bill_state" />
-            <label>CEP</label><input name="bill_zip" />
-        </fieldset>
+        ${this.addressGroupsHtml()}
 
         <div class="form-actions">
-            <button type="submit" class="btn primary">${data ? 'Salvar' : 'Criar'}</button>
-            ${data ? '<button type="button" id="delCustomer" class="btn danger">Remover</button>' : ''}
-            <button type="button" id="cancelCustomer" class="btn outline">Cancelar</button>
+          <button type="submit" class="btn primary">${data ? 'Salvar' : 'Criar'}</button>
+          ${data ? '<button type="button" id="delCustomer" class="btn danger">Remover</button>' : ''}
+          <button type="button" id="cancelCustomer" class="btn outline">Cancelar</button>
         </div>
-        </form>
+      </form>
     `;
 
     const form = document.getElementById('customerForm');
 
-    // Preenche dados, se estiver em modo edição
-    if (data) {
-        form.elements['name'].value = data.name || '';
-        form.elements['phone'].value = data.phone || '';
-        form.elements['cpf'].value = data.cpf || '';
+    // Focus → colapsa lista
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+      el.addEventListener('focus', () => {
+        this.panelEl.classList.add('list-collapsed');
+        this.panelEl.classList.remove('form-collapsed');
+      });
+    });
 
-        const d = data.defaultAddress || {};
-        form.elements['def_street'].value = d.street || '';
-        form.elements['def_number'].value = d.number || '';
-        form.elements['def_neighborhood'].value = d.neighborhood || '';
-        form.elements['def_city'].value = d.city || '';
-        form.elements['def_state'].value = d.state || '';
-        form.elements['def_zip'].value = d.zip || '';
+    // Preenche dados (edição)
+    if (data) this.fillCustomerForm(form, data);
 
-        const a = data.alternateAddress || {};
-        form.elements['alt_street'].value = a.street || '';
-        form.elements['alt_number'].value = a.number || '';
-        form.elements['alt_neighborhood'].value = a.neighborhood || '';
-        form.elements['alt_city'].value = a.city || '';
-        form.elements['alt_state'].value = a.state || '';
-        form.elements['alt_zip'].value = a.zip || '';
+    document.getElementById('cancelCustomer').addEventListener('click', () => {
+      this.renderCustomerForm();
+      this.panelEl.classList.remove('list-collapsed', 'form-collapsed');
+    });
 
-        const s = data.shippingAddres || {};
-        form.elements['ship_street'].value = s.street || '';
-        form.elements['ship_number'].value = s.number || '';
-        form.elements['ship_neighborhood'].value = s.neighborhood || '';
-        form.elements['ship_city'].value = s.city || '';
-        form.elements['ship_state'].value = s.state || '';
-        form.elements['ship_zip'].value = s.zip || '';
+    form.addEventListener('submit', async e => {
+      e.preventDefault();
 
-        const b = data.billingAddress || {};
-        form.elements['bill_street'].value = b.street || '';
-        form.elements['bill_number'].value = b.number || '';
-        form.elements['bill_neighborhood'].value = b.neighborhood || '';
-        form.elements['bill_city'].value = b.city || '';
-        form.elements['bill_state'].value = b.state || '';
-        form.elements['bill_zip'].value = b.zip || '';
-    }
+      const payload = this.collectCustomerData(form);
+      const path = `${this.companyPath}/customers`;
 
-    document.getElementById('cancelCustomer').addEventListener('click', () => this.renderCustomerForm());
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const payload = {
-          name: form.elements['name'].value.trim(),
-          phone: form.elements['phone'].value.trim(),
-          cpf: form.elements['cpf'].value.trim(),
-          defaultAddress: {
-              street: form.elements['def_street'].value.trim(),
-              number: Number(form.elements['def_number'].value || 0),
-              neighborhood: form.elements['def_neighborhood'].value.trim(),
-              city: form.elements['def_city'].value.trim(),
-              state: form.elements['def_state'].value.trim(),
-              zip: form.elements['def_zip'].value.trim(),
-          },
-          alternateAddress: {
-              street: form.elements['alt_street'].value.trim(),
-              number: Number(form.elements['alt_number'].value || 0),
-              neighborhood: form.elements['alt_neighborhood'].value.trim(),
-              city: form.elements['alt_city'].value.trim(),
-              state: form.elements['alt_state'].value.trim(),
-              zip: form.elements['alt_zip'].value.trim(),
-          },
-          shippingAddres: {
-              street: form.elements['ship_street'].value.trim(),
-              number: Number(form.elements['ship_number'].value || 0),
-              neighborhood: form.elements['ship_neighborhood'].value.trim(),
-              city: form.elements['ship_city'].value.trim(),
-              state: form.elements['ship_state'].value.trim(),
-              zip: form.elements['ship_zip'].value.trim(),
-          },
-          billingAddress: {
-              street: form.elements['bill_street'].value.trim(),
-              number: Number(form.elements['bill_number'].value || 0),
-              neighborhood: form.elements['bill_neighborhood'].value.trim(),
-              city: form.elements['bill_city'].value.trim(),
-              state: form.elements['bill_state'].value.trim(),
-              zip: form.elements['bill_zip'].value.trim(),
-          },
-        };
-
-        const path = `${this.companyPath}/customers`;
-
-        try {
+      try {
         if (data) {
-            await window.CRUD.update(path, data.id, payload);
-            this.renderCustomerForm();
+          await window.CRUD.update(path, data.id, payload);
+          this.renderCustomerForm();
         } else {
-            await window.CRUD.create(path, payload, true);
-            form.reset();
+          await window.CRUD.create(path, payload, true);
+          form.reset();
         }
-        } catch (err) {
+      } catch (err) {
         console.error('Erro ao salvar cliente:', err);
         alert('Erro ao salvar cliente. Verifique o console.');
-        }
+      }
+
+      this.panelEl.classList.remove('list-collapsed', 'form-collapsed');
     });
 
     if (data) {
-        document.getElementById('delCustomer').addEventListener('click', async () => {
+      document.getElementById('delCustomer').addEventListener('click', async () => {
         if (!confirm('Remover cliente?')) return;
         const path = `${this.companyPath}/customers`;
         await window.CRUD.delete(path, data.id);
         this.renderCustomerForm();
-        });
+      });
     }
-    // --- Collapsible address-groups in the edit panel (only) ---
-    (function initAddressCollapsibles() {
-        // pega todos os grupos de endereço no form
-        const groups = Array.from(form.querySelectorAll('.address-group'));
-        // mantém o primeiro (default) sempre aberto e colapsa os restantes
-        groups.forEach((g, i) => {
-            const legend = g.querySelector('legend');
-            // marca estado inicial: primeiros abertos, demais colapsados
-            if (i === 0) {
-                g.classList.remove('collapsed');
-                if (legend) legend.setAttribute('aria-expanded', 'true');
-            } else {
-                g.classList.add('collapsed');
-                if (legend) legend.setAttribute('aria-expanded', 'false');
-            }
-            // toggle ao clicar no legend (sempre só neste painel)
-            if (legend) {
-                legend.style.cursor = 'pointer';
-                legend.addEventListener('click', () => {
-                    const isCollapsed = g.classList.toggle('collapsed');
-                    legend.setAttribute('aria-expanded', String(!isCollapsed));
-                });
-            }
-        });
-    })();
 
-    },
+    this.initAddressCollapsibles(form);
+  },
 
+  addressGroupsHtml() {
+    const sections = ['padrão', 'alternativo', 'envio', 'cobrança'];
+    const keys = ['def', 'alt', 'ship', 'bill'];
+
+    return sections.map((label, i) => `
+      <fieldset class="address-group">
+        <legend>Endereço ${label}</legend>
+        <label>Rua</label><input name="${keys[i]}_street" />
+        <label>Número</label><input type="number" name="${keys[i]}_number" />
+        <label>Bairro</label><input name="${keys[i]}_neighborhood" />
+        <label>Cidade</label><input name="${keys[i]}_city" />
+        <label>Estado</label><input name="${keys[i]}_state" />
+        <label>CEP</label><input name="${keys[i]}_zip" />
+      </fieldset>
+    `).join('');
+  },
+
+  fillCustomerForm(form, data) {
+    form.elements['name'].value = data.name || '';
+    form.elements['phone'].value = data.phone || '';
+    form.elements['cpf'].value = data.cpf || '';
+
+    const addrMap = {
+      def: data.defaultAddress || {},
+      alt: data.alternateAddress || {},
+      ship: data.shippingAddress || {},
+      bill: data.billingAddress || {}
+    };
+
+    for (const [prefix, obj] of Object.entries(addrMap)) {
+      for (const field of ['street', 'number', 'neighborhood', 'city', 'state', 'zip']) {
+        form.elements[`${prefix}_${field}`].value = obj[field] || '';
+      }
+    }
+  },
+
+  collectCustomerData(form) {
+    const getAddr = (prefix) => ({
+      street: form.elements[`${prefix}_street`].value.trim(),
+      number: Number(form.elements[`${prefix}_number`].value || 0),
+      neighborhood: form.elements[`${prefix}_neighborhood`].value.trim(),
+      city: form.elements[`${prefix}_city`].value.trim(),
+      state: form.elements[`${prefix}_state`].value.trim(),
+      zip: form.elements[`${prefix}_zip`].value.trim(),
+    });
+
+    return {
+      name: form.elements['name'].value.trim(),
+      phone: form.elements['phone'].value.trim(),
+      cpf: form.elements['cpf'].value.trim(),
+      defaultAddress: getAddr('def'),
+      alternateAddress: getAddr('alt'),
+      shippingAddress: getAddr('ship'),
+      billingAddress: getAddr('bill'),
+    };
+  },
+
+  initAddressCollapsibles(form) {
+    const groups = Array.from(form.querySelectorAll('.address-group'));
+    groups.forEach((g, i) => {
+      const legend = g.querySelector('legend');
+      if (!legend) return;
+      legend.style.cursor = 'pointer';
+      if (i === 0) {
+        g.classList.remove('collapsed');
+        legend.setAttribute('aria-expanded', 'true');
+      } else {
+        g.classList.add('collapsed');
+        legend.setAttribute('aria-expanded', 'false');
+      }
+      legend.addEventListener('click', () => {
+        const isCollapsed = g.classList.toggle('collapsed');
+        legend.setAttribute('aria-expanded', String(!isCollapsed));
+      });
+    });
+  },
 
   renderCustomerList(arr) {
     const listPane = document.getElementById('listPane');
 
     if (!arr.length) {
-        listPane.innerHTML = '<div class="muted">Nenhum cliente cadastrado.</div>';
-        return;
+      listPane.innerHTML = '<div class="muted">Nenhum cliente cadastrado.</div>';
+      return;
     }
 
-    listPane.innerHTML = arr.map(c => {
-        // Endereços formatados
-        const formatAddr = (addr) => {
-        if (!addr) return '—';
-        const parts = [
-            addr.street || '',
-            addr.number ? `, nº ${addr.number}` : '',
-            addr.neighborhood ? `, ${addr.neighborhood}` : '',
-            addr.city ? ` - ${addr.city}` : '',
-            addr.state ? `/${addr.state}` : '',
-            addr.zip ? ` CEP ${addr.zip}` : ''
-        ].filter(Boolean).join('');
-        return parts || '—';
-        };
+    const formatAddr = (addr) => {
+      if (!addr) return '—';
+      const parts = [
+        addr.street || '',
+        addr.number ? `, nº ${addr.number}` : '',
+        addr.neighborhood ? `, ${addr.neighborhood}` : '',
+        addr.city ? ` - ${addr.city}` : '',
+        addr.state ? `/${addr.state}` : '',
+        addr.zip ? ` CEP ${addr.zip}` : ''
+      ].filter(Boolean).join('');
+      return parts || '—';
+    };
 
-        return `
-        <div class="list-item" data-id="${c.id}">
-            <div class="list-header">
-            <div>
-                <div class="item-title">${escapeHtml(c.name || '—')}</div>
-                <div class="item-sub">📞 ${escapeHtml(c.phone || '—')}</div>
-            </div>
-            <div class="item-actions">
-                <button class="btn small" data-action="edit">Editar</button>
-            </div>
-            </div>
-
-            <div class="list-details">
-            <div><strong>CPF:</strong> ${escapeHtml(c.cpf || '—')}</div>
-            <div><strong>Endereço principal:</strong> ${escapeHtml(formatAddr(c.defaultAddress))}</div>
-            <div><strong>Endereço alternativo:</strong> ${escapeHtml(formatAddr(c.alternateAddress))}</div>
-            <div><strong>Endereço de envio:</strong> ${escapeHtml(formatAddr(c.shippingAddres))}</div>
-            <div><strong>Endereço de cobrança:</strong> ${escapeHtml(formatAddr(c.billingAddress))}</div>
-            <div><strong>Criado em:</strong> ${c.createdAt ? new Date(c.createdAt).toLocaleString() : '—'}</div>
-            </div>
+    listPane.innerHTML = arr.map(c => `
+      <div class="list-item" data-id="${c.id}">
+        <div class="list-header">
+          <div>
+            <div class="item-title">${escapeHtml(c.name || '—')}</div>
+            <div class="item-sub">📞 ${escapeHtml(c.phone || '—')}</div>
+          </div>
+          <div class="item-actions">
+            <button class="btn small" data-action="edit">Editar</button>
+          </div>
         </div>
-        `;
-    }).join('');
+        <div class="list-details">
+          <div><strong>CPF:</strong> ${escapeHtml(c.cpf || '—')}</div>
+          <div><strong>Endereço principal:</strong> ${escapeHtml(formatAddr(c.defaultAddress))}</div>
+          <div><strong>Endereço alternativo:</strong> ${escapeHtml(formatAddr(c.alternateAddress))}</div>
+          <div><strong>Endereço de envio:</strong> ${escapeHtml(formatAddr(c.shippingAddress))}</div>
+          <div><strong>Endereço de cobrança:</strong> ${escapeHtml(formatAddr(c.billingAddress))}</div>
+          <div><strong>Criado em:</strong> ${c.createdAt ? new Date(c.createdAt).toLocaleString() : '—'}</div>
+        </div>
+      </div>
+    `).join('');
 
-    // ======= Eventos =======
-
-    // Toggle de abrir/fechar detalhes
-    /* funcional
-    listPane.querySelectorAll('.list-item').forEach(item => {
-        const header = item.querySelector('.list-header');
-        header.addEventListener('click', e => {
-        // Ignora clique no botão "Editar"
-        if (e.target.closest('button[data-action="edit"]')) return;
-        item.classList.toggle('open');
-        });
-    });
-    */
-   // Toggle de abrir/fechar detalhes (fecha os outros ao abrir um)
+    // toggle abrir/fechar
     listPane.querySelectorAll('.list-item').forEach(item => {
       const header = item.querySelector('.list-header');
-        header.addEventListener('click', e => {
-        // Ignora clique no botão "Editar"
+      header.addEventListener('click', e => {
         if (e.target.closest('button[data-action="edit"]')) return;
-
         const isOpen = item.classList.contains('open');
-
-        // Fecha todos os outros
-        listPane.querySelectorAll('.list-item.open').forEach(other => {
-          other.classList.remove('open');
-        });
-
-        // Reabre apenas este se estava fechado
-        if (!isOpen) {
-          item.classList.add('open');
-        }
+        listPane.querySelectorAll('.list-item.open').forEach(other => other.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+        this.panelEl.classList.add('form-collapsed');
+        this.panelEl.classList.remove('list-collapsed');
       });
     });
 
-
-    // Botão Editar
+    // botão editar
     listPane.querySelectorAll('[data-action="edit"]').forEach(btn => {
-        btn.addEventListener('click', () => {
+      btn.addEventListener('click', () => {
         const id = btn.closest('.list-item').dataset.id;
         const doc = arr.find(x => x.id === id);
         this.renderCustomerForm(doc);
-        });
+        this.panelEl.classList.add('list-collapsed');
+        this.panelEl.classList.remove('form-collapsed');
+      });
     });
   },
 
-  // PRODUCTS: CRUD completo
+  // =====================
+  // PRODUCTS CRUD
+  // =====================
   loadProducts() {
     const path = `${this.companyPath}/products`;
     this.content.innerHTML = `
@@ -380,9 +310,7 @@ const UI = {
       </div>
     `;
     this.renderProductForm();
-    this.unsubscribe = window.CRUD.subscribe(path, (arr) => {
-      this.renderProductList(arr);
-    }, 'name');
+    this.unsubscribe = window.CRUD.subscribe(path, arr => this.renderProductList(arr), 'name');
   },
 
   renderProductForm(data = null) {
@@ -467,7 +395,9 @@ const UI = {
     });
   },
 
-  // ORDERS: somente visual
+  // =====================
+  // ORDERS (visual)
+  // =====================
   async loadOrders() {
     const path = `${this.companyPath}/orders`;
     this.content.innerHTML = '<h3>Pedidos</h3><div id="ordersList">Carregando...</div>';
@@ -484,7 +414,9 @@ const UI = {
     `).join('');
   },
 
-  // CARTS: somente visual
+  // =====================
+  // CARTS (visual)
+  // =====================
   async loadCarts() {
     const path = `${this.companyPath}/carts`;
     this.content.innerHTML = '<h3>Carrinhos</h3><div id="cartsList">Carregando...</div>';
@@ -513,7 +445,13 @@ function viewLabel(v) {
 
 function escapeHtml(s) {
   if (!s) return '';
-  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return String(s).replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
 }
 
 function formatCnpj(c) {
