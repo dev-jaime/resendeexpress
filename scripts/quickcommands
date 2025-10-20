@@ -1,6 +1,17 @@
 
 commitgh -> faz commit para o GitHub
 
-deplyf -> faz o deploy para o Firebase
+deployfire -> faz o deploy para o Firebase
 
-deploy_all => faz o commit para o GitHub e o deploy para o Firebase
+deployall => faz o commit para o GitHub e o deploy para o Firebase
+
+| Alias        | Ação                                                                   | Script executado              |
+| ------------ | ---------------------------------------------------------------------- | ----------------------------- |
+| `commitgh`   | Faz commit automático das alterações locais e envia ao GitHub.         | `scripts/auto_commit.sh`      |
+| `deployfire` | Faz o deploy do site no Firebase Hosting.                              | `scripts/deploy_firebase.sh`  |
+| `deployall`  | Faz commit e push para o GitHub **e depois** o deploy para o Firebase. | `scripts/auto_push_deploy.sh` |
+
+Adicionando alias permanentemente
+echo "alias commitgh='bash ./scripts/auto_commit.sh'" >> ~/.bashrc
+echo "alias deployfire='bash ./scripts/deploy_firebase.sh'" >> ~/.bashrc
+echo "alias deployall='bash ./scripts/auto_push_deploy.sh'" >> ~/.bashrc
