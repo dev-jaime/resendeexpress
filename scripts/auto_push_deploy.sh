@@ -5,7 +5,6 @@
 if git diff-index --quiet HEAD --; then
     echo ""
     echo "🔹 Nenhuma alteração para commitar."
-    echo ""
 else
     # Adiciona alterações (modificadas e novas)
     git add .
@@ -15,7 +14,6 @@ else
     git push
     echo ""
     echo "✔  Deploy concluído!"
-    echo ""
 fi
 
 # Deploy no Firebase Hosting
