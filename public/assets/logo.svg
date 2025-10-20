@@ -1,0 +1,42 @@
+<!-- assets/logo.svg -->
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="Resende Express — REX">
+  <title>Resende Express — REX</title>
+
+  <!-- Rounded square background -->
+  <rect x="0" y="0" width="240" height="240" rx="36" ry="36" fill="#0059b2"/>
+
+  <!-- Decorative diagonal stripe (subtle) -->
+  <path d="M0 180 L240 60 L240 120 L0 240 Z" fill="#084b8f" opacity="0.18"/>
+
+  <!-- REX text: large, bold, geometric -->
+  <g transform="translate(0,10)">
+    <!-- R -->
+    <path d="M46 68
+             v72
+             h18
+             v-27
+             q10 0 16 -5 q6 -5 6 -16 q0 -10 -6 -15 q-6 -5 -18 -5
+             h-16
+             z
+             M64 86
+             q8 0 11 2 q3 2 3 7 q0 5 -3 7 q-3 2 -11 2
+             h-2
+             v-18
+             h2
+             z"
+          fill="#ffffff" transform="scale(1.5) translate(2,10)"/>
+
+    <!-- E -->
+    <path d="M106 70 v72 h44 v-14 h-26 v-18 h22 v-14 h-22 v-18 h26 v-14 h-44 z"
+          fill="#ffffff" transform="scale(1) translate(-4,16)"/>
+
+    <!-- X -->
+    <path d="M190 70 l-22 30 l-22 -30 h-18 l34 48 l-34 48 h18 l22 -30 l22 30 h18 l-34 -48 l34 -48 z"
+          fill="#ffffff" transform="translate(-24,6) scale(0.9)"/>
+  </g>
+
+  <!-- Optional small subtitle -->
+  <text x="120" y="210" font-family="Inter,system-ui,Arial,Helvetica,sans-serif"
+        font-size="16" fill="#ffffff" text-anchor="middle" opacity="0.9">Resende Express</text>
+</svg>
