@@ -87,237 +87,128 @@ const UI = {
   renderCustomerForm(data = null) {
     const formPane = document.getElementById('formPane');
     formPane.innerHTML = `
-        <h3>${data ? 'Editar cliente' : 'Novo cliente'}</h3>
-        <form id="customerForm" class="entity-form">
+      <h3>${data ? 'Editar cliente' : 'Novo cliente'}</h3>
+      <form id="customerForm" class="entity-form">
         <label>Nome</label><input name="name" required />
         <label>Telefone</label><input name="phone" />
         <label>CPF</label><input name="cpf" />
-
-        <fieldset class="address-group">
-            <legend>Endereço padrão</legend>
-            <label>Rua</label><input name="def_street" />
-            <label>Número</label><input type="number" name="def_number" />
-            <label>Bairro</label><input name="def_neighborhood" />
-            <label>Cidade</label><input name="def_city" />
-            <label>Estado</label><input name="def_state" />
-            <label>CEP</label><input name="def_zip" />
-        </fieldset>
-
-        <fieldset class="address-group">
-            <legend>Endereço alternativo</legend>
-            <label>Rua</label><input name="alt_street" />
-            <label>Número</label><input type="number" name="alt_number" />
-            <label>Bairro</label><input name="alt_neighborhood" />
-            <label>Cidade</label><input name="alt_city" />
-            <label>Estado</label><input name="alt_state" />
-            <label>CEP</label><input name="alt_zip" />
-        </fieldset>
-
-        <fieldset class="address-group">
-            <legend>Endereço de envio</legend>
-            <label>Rua</label><input name="ship_street" />
-            <label>Número</label><input type="number" name="ship_number" />
-            <label>Bairro</label><input name="ship_neighborhood" />
-            <label>Cidade</label><input name="ship_city" />
-            <label>Estado</label><input name="ship_state" />
-            <label>CEP</label><input name="ship_zip" />
-        </fieldset>
-
-        <fieldset class="address-group">
-            <legend>Endereço de cobrança</legend>
-            <label>Rua</label><input name="bill_street" />
-            <label>Número</label><input type="number" name="bill_number" />
-            <label>Bairro</label><input name="bill_neighborhood" />
-            <label>Cidade</label><input name="bill_city" />
-            <label>Estado</label><input name="bill_state" />
-            <label>CEP</label><input name="bill_zip" />
-        </fieldset>
-
+        <label>Endereço padrão (JSON)</label><textarea name="defaultAddress" rows="3" placeholder='{"street":"..."}'></textarea>
+        <label>Endereço alternativo (JSON)</label><textarea name="alternateAddress" rows="3" placeholder='{"street":"..."}'></textarea>
+        <label>Endereço de envio (JSON)</label><textarea name="shippingAddres" rows="3" placeholder='{"street":"..."}'></textarea>
+        <label>Endereço de cobrança (JSON)</label><textarea name="billingAddress" rows="3" placeholder='{"street":"..."}'></textarea>
         <div class="form-actions">
-            <button type="submit" class="btn primary">${data ? 'Salvar' : 'Criar'}</button>
-            ${data ? '<button type="button" id="delCustomer" class="btn danger">Remover</button>' : ''}
-            <button type="button" id="cancelCustomer" class="btn outline">Cancelar</button>
+          <button type="submit" class="btn primary">${data ? 'Salvar' : 'Criar'}</button>
+          ${data ? '<button type="button" id="delCustomer" class="btn danger">Remover</button>' : ''}
+          <button type="button" id="cancelCustomer" class="btn outline">Cancelar</button>
         </div>
-        </form>
+      </form>
     `;
 
     const form = document.getElementById('customerForm');
 
-    // Preenche dados, se estiver em modo edição
     if (data) {
-        form.elements['name'].value = data.name || '';
-        form.elements['phone'].value = data.phone || '';
-        form.elements['cpf'].value = data.cpf || '';
-
-        const d = data.defaultAddress || {};
-        form.elements['def_street'].value = d.street || '';
-        form.elements['def_number'].value = d.number || '';
-        form.elements['def_neighborhood'].value = d.neighborhood || '';
-        form.elements['def_city'].value = d.city || '';
-        form.elements['def_state'].value = d.state || '';
-        form.elements['def_zip'].value = d.zip || '';
-
-        const a = data.alternateAddress || {};
-        form.elements['alt_street'].value = a.street || '';
-        form.elements['alt_number'].value = a.number || '';
-        form.elements['alt_neighborhood'].value = a.neighborhood || '';
-        form.elements['alt_city'].value = a.city || '';
-        form.elements['alt_state'].value = a.state || '';
-        form.elements['alt_zip'].value = a.zip || '';
-
-        const s = data.shippingAddres || {};
-        form.elements['ship_street'].value = s.street || '';
-        form.elements['ship_number'].value = s.number || '';
-        form.elements['ship_neighborhood'].value = s.neighborhood || '';
-        form.elements['ship_city'].value = s.city || '';
-        form.elements['ship_state'].value = s.state || '';
-        form.elements['ship_zip'].value = s.zip || '';
-
-        const b = data.billingAddress || {};
-        form.elements['bill_street'].value = b.street || '';
-        form.elements['bill_number'].value = b.number || '';
-        form.elements['bill_neighborhood'].value = b.neighborhood || '';
-        form.elements['bill_city'].value = b.city || '';
-        form.elements['bill_state'].value = b.state || '';
-        form.elements['bill_zip'].value = b.zip || '';
+      form.elements['name'].value = data.name || '';
+      form.elements['phone'].value = data.phone || '';
+      form.elements['cpf'].value = data.cpf || '';
+      form.elements['defaultAddress'].value = JSON.stringify(data.defaultAddress || {}, null, 0);
+      form.elements['alternateAddress'].value = JSON.stringify(data.alternateAddress || {}, null, 0);
+      form.elements['shippingAddres'].value = JSON.stringify(data.shippingAddres || {}, null, 0);
+      form.elements['billingAddress'].value = JSON.stringify(data.billingAddress || {}, null, 0);
     }
 
     document.getElementById('cancelCustomer').addEventListener('click', () => this.renderCustomerForm());
 
     form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      e.preventDefault();
+      const payload = {
+        name: form.elements['name'].value.trim(),
+        phone: form.elements['phone'].value.trim(),
+        cpf: form.elements['cpf'].value.trim(),
+      };
 
-        const payload = {
-          name: form.elements['name'].value.trim(),
-          phone: form.elements['phone'].value.trim(),
-          cpf: form.elements['cpf'].value.trim(),
-          defaultAddress: {
-              street: form.elements['def_street'].value.trim(),
-              number: Number(form.elements['def_number'].value || 0),
-              neighborhood: form.elements['def_neighborhood'].value.trim(),
-              city: form.elements['def_city'].value.trim(),
-              state: form.elements['def_state'].value.trim(),
-              zip: form.elements['def_zip'].value.trim(),
-          },
-          alternateAddress: {
-              street: form.elements['alt_street'].value.trim(),
-              number: Number(form.elements['alt_number'].value || 0),
-              neighborhood: form.elements['alt_neighborhood'].value.trim(),
-              city: form.elements['alt_city'].value.trim(),
-              state: form.elements['alt_state'].value.trim(),
-              zip: form.elements['alt_zip'].value.trim(),
-          },
-          shippingAddres: {
-              street: form.elements['ship_street'].value.trim(),
-              number: Number(form.elements['ship_number'].value || 0),
-              neighborhood: form.elements['ship_neighborhood'].value.trim(),
-              city: form.elements['ship_city'].value.trim(),
-              state: form.elements['ship_state'].value.trim(),
-              zip: form.elements['ship_zip'].value.trim(),
-          },
-          billingAddress: {
-              street: form.elements['bill_street'].value.trim(),
-              number: Number(form.elements['bill_number'].value || 0),
-              neighborhood: form.elements['bill_neighborhood'].value.trim(),
-              city: form.elements['bill_city'].value.trim(),
-              state: form.elements['bill_state'].value.trim(),
-              zip: form.elements['bill_zip'].value.trim(),
-          },
-        };
+      // campos JSON
+      try {
+        payload.defaultAddress = JSON.parse(form.elements['defaultAddress'].value || '{}');
+        payload.alternateAddress = JSON.parse(form.elements['alternateAddress'].value || '{}');
+        payload.shippingAddres = JSON.parse(form.elements['shippingAddres'].value || '{}');
+        payload.billingAddress = JSON.parse(form.elements['billingAddress'].value || '{}');
+      } catch (err) {
+        alert('Um dos endereços JSON está inválido.');
+        return;
+      }
 
-        const path = `${this.companyPath}/customers`;
+      
 
-        try {
+      const path = `${this.companyPath}/customers`;
+
+      try {
         if (data) {
-            await window.CRUD.update(path, data.id, payload);
-            this.renderCustomerForm();
+          // Atualiza cliente existente
+          await window.CRUD.update(path, data.id, payload);
+          this.renderCustomerForm();
         } else {
-            await window.CRUD.create(path, payload, true);
-            form.reset();
+          // Cria novo cliente com ID automático baseado em timestamp
+          await window.CRUD.create(path, payload, true);
+          form.reset();
         }
-        } catch (err) {
+      } catch (err) {
         console.error('Erro ao salvar cliente:', err);
         alert('Erro ao salvar cliente. Verifique o console.');
-        }
+      }
     });
 
     if (data) {
-        document.getElementById('delCustomer').addEventListener('click', async () => {
+      document.getElementById('delCustomer').addEventListener('click', async () => {
         if (!confirm('Remover cliente?')) return;
         const path = `${this.companyPath}/customers`;
         await window.CRUD.delete(path, data.id);
         this.renderCustomerForm();
-        });
+      });
     }
-    },
-
+  },
 
   renderCustomerList(arr) {
     const listPane = document.getElementById('listPane');
 
     if (!arr.length) {
-        listPane.innerHTML = '<div class="muted">Nenhum cliente cadastrado.</div>';
-        return;
+      listPane.innerHTML = '<div class="muted">Nenhum cliente cadastrado.</div>';
+      return;
     }
 
     listPane.innerHTML = arr.map(c => {
-        // Endereços formatados
-        const formatAddr = (addr) => {
-        if (!addr) return '—';
-        const parts = [
-            addr.street || '',
-            addr.number ? `, nº ${addr.number}` : '',
-            addr.neighborhood ? `, ${addr.neighborhood}` : '',
-            addr.city ? ` - ${addr.city}` : '',
-            addr.state ? `/${addr.state}` : '',
-            addr.zip ? ` CEP ${addr.zip}` : ''
-        ].filter(Boolean).join('');
-        return parts || '—';
-        };
+      const defaultAddr = c.defaultAddress ? JSON.stringify(c.defaultAddress) : '{}';
+      const alternateAddr = c.alternateAddress ? JSON.stringify(c.alternateAddress) : '{}';
+      const shippingAddr = c.shippingAddres ? JSON.stringify(c.shippingAddres) : '{}';
+      const billingAddr = c.billingAddress ? JSON.stringify(c.billingAddress) : '{}';
 
-        return `
-        <div class="list-item" data-id="${c.id}">
-            <div class="list-header">
-            <div>
-                <div class="item-title">${escapeHtml(c.name || '—')}</div>
-                <div class="item-sub">📞 ${escapeHtml(c.phone || '—')}</div>
+      return `
+        <div class="list-item">
+          <div>
+            <div class="item-title">${escapeHtml(c.name || '—')}</div>
+            <div class="item-sub">
+              CPF: ${escapeHtml(c.cpf || '—')} • Telefone: ${escapeHtml(c.phone || '—')}
             </div>
-            <div class="item-actions">
-                <button class="btn small" data-action="edit">Editar</button>
+            <div class="item-sub small muted">
+              Default: ${escapeHtml(defaultAddr)}<br>
+              Alternativo: ${escapeHtml(alternateAddr)}<br>
+              Envio: ${escapeHtml(shippingAddr)}<br>
+              Cobrança: ${escapeHtml(billingAddr)}
             </div>
-            </div>
-
-            <div class="list-details">
-            <div><strong>CPF:</strong> ${escapeHtml(c.cpf || '—')}</div>
-            <div><strong>Endereço principal:</strong> ${escapeHtml(formatAddr(c.defaultAddress))}</div>
-            <div><strong>Endereço alternativo:</strong> ${escapeHtml(formatAddr(c.alternateAddress))}</div>
-            <div><strong>Endereço de envio:</strong> ${escapeHtml(formatAddr(c.shippingAddres))}</div>
-            <div><strong>Endereço de cobrança:</strong> ${escapeHtml(formatAddr(c.billingAddress))}</div>
-            <div><strong>Criado em:</strong> ${c.createdAt ? new Date(c.createdAt).toLocaleString() : '—'}</div>
-            </div>
+          </div>
+          <div class="item-actions">
+            <button data-id="${c.id}" class="btn small" data-action="edit">Editar</button>
+          </div>
         </div>
-        `;
+      `;
     }).join('');
 
-    // ======= Eventos =======
-
-    // Toggle de abrir/fechar detalhes
-    listPane.querySelectorAll('.list-item').forEach(item => {
-        const header = item.querySelector('.list-header');
-        header.addEventListener('click', e => {
-        // Ignora clique no botão "Editar"
-        if (e.target.closest('button[data-action="edit"]')) return;
-        item.classList.toggle('open');
-        });
-    });
-
-    // Botão Editar
+    // bind edit
     listPane.querySelectorAll('[data-action="edit"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-        const id = btn.closest('.list-item').dataset.id;
+      btn.addEventListener('click', () => {
+        const id = btn.dataset.id;
         const doc = arr.find(x => x.id === id);
         this.renderCustomerForm(doc);
-        });
+      });
     });
   },
 

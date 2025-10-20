@@ -1,73 +1,235 @@
-/* css/dashboard.css */
-#app{display:flex;min-height:100vh}
-
-.sidebar{
-  width:260px;
-  background:linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
-  border-right:1px solid #eef2f6;
-  padding:18px;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
+/* ==============================
+   DASHBOARD LAYOUT
+============================== */
+#app {
+  display: flex;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #f9fafb;
+  color: #222;
 }
 
-.sidebar-top{display:flex;gap:10px;align-items:center}
-.company-header{display:flex;flex-direction:column}
-.company-name{font-weight:700}
-.company-cnpj{font-size:13px;color:var(--muted)}
-
-.menu{display:flex;flex-direction:column;gap:8px}
-.menu-btn{
-  text-align:left;
-  padding:10px 12px;
-  border-radius:8px;
-  border:none;
-  background:transparent;
-  cursor:pointer;
-  font-weight:600;
-  color:var(--text);
+/* ==============================
+   SIDEBAR
+============================== */
+.sidebar {
+  width: 260px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  border-right: 1px solid #eef2f6;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
-.menu-btn:hover{background:#f1f5f9}
 
-.sidebar-bottom{margin-top:auto}
-
-.main{flex:1;display:flex;flex-direction:column}
-.topbar{
-  padding:18px 22px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  border-bottom:1px solid #f0f4f8;
+.sidebar-top {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
-.content{padding:22px;overflow:auto}
 
-/* Panels layout */
-.panel{display:flex;gap:18px}
-.panel-left{width:48%;min-width:260px}
-.panel-right{flex:1}
-
-/* list items */
-.list-item{
-  background:var(--card);
-  border:1px solid #f0f3f7;
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.company-header {
+  display: flex;
+  flex-direction: column;
 }
-.item-title{font-weight:700}
-.item-sub{color:var(--muted);font-size:13px}
-.item-actions{display:flex;gap:8px}
 
-/* entity form */
-.entity-form label{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
-.entity-form input, .entity-form textarea{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #eef3fa}
-.form-actions{display:flex;gap:8px;margin-top:12px}
+.company-name {
+  font-weight: 700;
+  font-size: 1.05em;
+}
 
-/* card small */
-.card.small{padding:10px;border:1px solid #eef3f7;border-radius:10px;margin-bottom:8px}
+.company-cnpj {
+  font-size: 13px;
+  color: var(--muted, #6b7280);
+}
 
-/* loading */
-.loading{color:var(--muted);padding:24px;text-align:center}
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-btn {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text, #1f2937);
+  transition: background 0.2s;
+}
+.menu-btn:hover {
+  background: #f1f5f9;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+}
+
+/* ==============================
+   MAIN AREA
+============================== */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f0f4f8;
+  background: #fff;
+}
+
+.content {
+  padding: 22px;
+  overflow: auto;
+}
+
+/* ==============================
+   PANELS LAYOUT
+============================== */
+.panel {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.panel-left {
+  width: 48%;
+  min-width: 260px;
+}
+.panel-right {
+  flex: 1;
+}
+
+/* ==============================
+   ADDRESS GROUPS
+============================== */
+.address-group {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 1em;
+  padding: 0.8em;
+  background: #fafafa;
+}
+.address-group legend {
+  font-weight: bold;
+  padding: 0 5px;
+  color: #333;
+}
+.address-group label {
+  display: block;
+  margin-top: 0.3em;
+  font-size: 0.9em;
+}
+.address-group input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  margin-top: 2px;
+}
+
+/* ==============================
+   LIST ITEMS (Customer list)
+============================== */
+.list-item {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.list-item:hover {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  background: #fcfcfc;
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.item-title {
+  font-weight: 700;
+  font-size: 1.05em;
+}
+
+.item-sub {
+  color: #555;
+  font-size: 0.9em;
+  margin-top: 2px;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.list-details {
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+  color: #444;
+  font-size: 0.9em;
+  display: none; /* inicia colapsado */
+}
+
+.list-item.open .list-details {
+  display: block;
+}
+
+/* ==============================
+   ENTITY FORM
+============================== */
+.entity-form label {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted, #6b7280);
+}
+.entity-form input,
+.entity-form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 8px;
+  border: 1px solid #eef3fa;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* ==============================
+   SMALL CARD
+============================== */
+.card.small {
+  padding: 10px;
+  border: 1px solid #eef3f7;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+/* ==============================
+   LOADING & MUTED TEXT
+============================== */
+.loading {
+  color: var(--muted, #6b7280);
+  padding: 24px;
+  text-align: center;
+}
+.muted {
+  color: #9ca3af;
+  font-size: 0.9em;
+}

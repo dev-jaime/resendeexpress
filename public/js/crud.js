@@ -48,6 +48,7 @@ export const CRUD = {
     });
   },
 
+  /*
   async create(collectionPath, data = {}) {
     const colRef = collectionPathToRef(collectionPath);
     const payload = { ...data };
@@ -61,7 +62,34 @@ export const CRUD = {
       throw err;
     }
   },
+  */
+  async create(collectionPath, data = {}, customIdTimestamp = true) {
+    const colRef = collectionPathToRef(collectionPath);
+    const payload = { ...data };
+    payload.createdAt = payload.createdAt || Date.now();
 
+    try {
+      let res, customId;
+
+      if (customIdTimestamp) {
+        // gera ID com timestamp
+        customId = `${collectionPath.split('/').pop()}${Date.now()}`;
+        const ref = doc(colRef, customId); // cria referência com ID customizado
+        await setDoc(ref, payload);        // cria documento
+        res = { id: customId };            // simula retorno
+      } else {
+        // cria documento com ID automático
+        res = await addDoc(colRef, payload);
+      }
+
+      return { id: res.id || customId, ...payload };
+    } catch (err) {
+      console.error('CRUD.create', err);
+      throw err;
+    }
+  },
+
+  /*
   async update(collectionPath, docId, data = {}) {
     try {
       const docRef = doc(collectionPathToRef(collectionPath).path.split('/')[0] ? db : null, ...[]); // placeholder to satisfy linter
@@ -75,11 +103,16 @@ export const CRUD = {
       throw err;
     }
   },
+  */
+  async update(collectionPath, id, data) {
+    // cria referência direta ao doc
+    const ref = doc(db, collectionPath, id);
+    await updateDoc(ref, data);
+  },
 
-  async set(collectionPath, docId, data = {}) {
-    // set (merge)
+  async set(collectionPath, id, data = {}) {
     try {
-      const ref = doc(db, ...collectionPath.split('/').concat([docId]));
+      const ref = doc(db, collectionPath, id);
       const payload = { ...data, updatedAt: Date.now() };
       await setDoc(ref, payload, { merge: true });
       return true;
@@ -89,6 +122,7 @@ export const CRUD = {
     }
   },
 
+  /*
   async delete(collectionPath, docId) {
     try {
       const ref = doc(db, ...collectionPath.split('/').concat([docId]));
@@ -99,15 +133,27 @@ export const CRUD = {
       throw err;
     }
   }
+    */
+  async delete(collectionPath, id) {
+    const ref = doc(db, collectionPath, id);
+    await deleteDoc(ref);
+    return true;
+  }
+
 };
 
-// helper para transformar string em ref
 function collectionPathToRef(path) {
-  // split path into segments and call collection sequentially
-  // but since we export window.Firebase.collection which expects (db, path) we simply:
-  // return collection(db, path) - works only for simple paths; Firestore modular supports nested paths too.
-  return collection(db, ...path.split('/'));
+  // path = "companies/XYZ/customers"
+  const parts = path.split('/');
+  if (parts.length % 2 === 0) {
+    // número par → é um doc? usar collection do parent
+    const docPath = parts.slice(0, -1).join('/');
+    return collection(db, docPath, parts[parts.length - 1]);
+  } else {
+    return collection(db, ...parts);
+  }
 }
+
 
 // expose globally
 window.CRUD = CRUD;

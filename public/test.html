@@ -9,7 +9,8 @@
   <pre id="output">Carregando...</pre>
 
   <script type="module">
-    import { initializeApp } from "./js/firebase.js"; // ou https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js
+    //import { initializeApp } from "./js/firebase.js"; // ou https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
 
     // firebaseConfig deve ser o mesmo do seu firebase.js
@@ -26,7 +27,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const docRef = doc(db, 'companies/company001/customers/customer001');
+    //const docRef = doc(db, 'companies/company001/customers/customer001');
+    const docRef = doc(db, 'companies/company001');
 
     getDoc(docRef).then(docSnap => {
       const out = document.getElementById('output');
