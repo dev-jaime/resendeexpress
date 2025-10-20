@@ -1,0 +1,3 @@
+auto_push -> faz commit para o GitHub
+deplyf -> faz o deploy para o Firebase
+deploy_all => faz o commit para o GitHub e o deploy para o Firebase
