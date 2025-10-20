@@ -88,7 +88,7 @@
 
 .content {
   padding: 22px;
-  overflow: auto;
+  overflow: hidden; /* impede rolagem dupla */
 }
 
 /* ==============================
@@ -97,14 +97,26 @@
 .panel {
   display: flex;
   gap: 18px;
-  flex-wrap: wrap;
+  height: calc(100vh - 120px); /* mantém a proporção visível */
 }
+
 .panel-left {
-  width: 48%;
+  width: 45%;
   min-width: 260px;
+  overflow-y: auto;
+  padding-right: 10px;
 }
+
 .panel-right {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 18px;
+  overflow-y: auto; /* rola apenas o formulário */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 /* ==============================
@@ -116,11 +128,13 @@
   margin-top: 1em;
   padding: 0.8em;
   background: #fafafa;
+  transition: all 0.3s ease;
 }
 .address-group legend {
   font-weight: bold;
   padding: 0 5px;
   color: #333;
+  cursor: pointer;
 }
 .address-group label {
   display: block;
@@ -133,6 +147,28 @@
   border: 1px solid #e5e7eb;
   border-radius: 4px;
   margin-top: 2px;
+}
+
+/* Colapsáveis (endereços adicionais) */
+.address-group.collapsed {
+  max-height: 0;       /* fecha totalmente */
+  padding: 0.7em;          /* remove padding ao colapsar */
+  margin-top: 0.5em;   /* opcional, só pra manter espaçamento visual */
+  overflow: hidden;
+  background: #f3f4f6;
+  border-width: 1px 1px 0 1px; /* mantém só borda superior/lateral, opcional */
+  cursor: pointer;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+.address-group.collapsed legend::after {
+  content: " ▼";
+  font-size: 12px;
+  color: #888;
+}
+.address-group:not(.collapsed) legend::after {
+  content: " ▲";
+  font-size: 12px;
+  color: #888;
 }
 
 /* ==============================
@@ -180,7 +216,7 @@
   padding-top: 8px;
   color: #444;
   font-size: 0.9em;
-  display: none; /* inicia colapsado */
+  display: none;
 }
 
 .list-item.open .list-details {
@@ -232,4 +268,21 @@
 .muted {
   color: #9ca3af;
   font-size: 0.9em;
+}
+
+/* ==============================
+   SCROLL STYLING (melhor UX)
+============================== */
+.panel-left::-webkit-scrollbar,
+.panel-right::-webkit-scrollbar {
+  width: 8px;
+}
+.panel-left::-webkit-scrollbar-thumb,
+.panel-right::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 8px;
+}
+.panel-left::-webkit-scrollbar-thumb:hover,
+.panel-right::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
 }

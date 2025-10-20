@@ -249,6 +249,32 @@ const UI = {
         this.renderCustomerForm();
         });
     }
+    // --- Collapsible address-groups in the edit panel (only) ---
+    (function initAddressCollapsibles() {
+        // pega todos os grupos de endereço no form
+        const groups = Array.from(form.querySelectorAll('.address-group'));
+        // mantém o primeiro (default) sempre aberto e colapsa os restantes
+        groups.forEach((g, i) => {
+            const legend = g.querySelector('legend');
+            // marca estado inicial: primeiros abertos, demais colapsados
+            if (i === 0) {
+                g.classList.remove('collapsed');
+                if (legend) legend.setAttribute('aria-expanded', 'true');
+            } else {
+                g.classList.add('collapsed');
+                if (legend) legend.setAttribute('aria-expanded', 'false');
+            }
+            // toggle ao clicar no legend (sempre só neste painel)
+            if (legend) {
+                legend.style.cursor = 'pointer';
+                legend.addEventListener('click', () => {
+                    const isCollapsed = g.classList.toggle('collapsed');
+                    legend.setAttribute('aria-expanded', String(!isCollapsed));
+                });
+            }
+        });
+    })();
+
     },
 
 
@@ -302,6 +328,7 @@ const UI = {
     // ======= Eventos =======
 
     // Toggle de abrir/fechar detalhes
+    /* funcional
     listPane.querySelectorAll('.list-item').forEach(item => {
         const header = item.querySelector('.list-header');
         header.addEventListener('click', e => {
@@ -310,6 +337,28 @@ const UI = {
         item.classList.toggle('open');
         });
     });
+    */
+   // Toggle de abrir/fechar detalhes (fecha os outros ao abrir um)
+    listPane.querySelectorAll('.list-item').forEach(item => {
+      const header = item.querySelector('.list-header');
+        header.addEventListener('click', e => {
+        // Ignora clique no botão "Editar"
+        if (e.target.closest('button[data-action="edit"]')) return;
+
+        const isOpen = item.classList.contains('open');
+
+        // Fecha todos os outros
+        listPane.querySelectorAll('.list-item.open').forEach(other => {
+          other.classList.remove('open');
+        });
+
+        // Reabre apenas este se estava fechado
+        if (!isOpen) {
+          item.classList.add('open');
+        }
+      });
+    });
+
 
     // Botão Editar
     listPane.querySelectorAll('[data-action="edit"]').forEach(btn => {
