@@ -2,6 +2,7 @@
 
 echo ""
 echo "=> Iniciando commit no GitHub..."
+echo ""
 if git diff-index --quiet HEAD --; then
     echo ""
     echo -e "\e[34m 🔹 Nenhuma alteração para commitar.\e[0m"
