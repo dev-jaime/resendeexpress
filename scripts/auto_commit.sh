@@ -2,7 +2,7 @@
 
 if git diff-index --quiet HEAD --; then
     echo ""
-    echo "\e[32m🔹 Nenhuma alteração para commitar.\e[0m"
+    echo "\e[34m🔹 Nenhuma alteração para commitar.\e[0m"
     echo ""
 else
     # Adiciona alterações (modificadas e novas)
@@ -12,6 +12,6 @@ else
     # Envia para o GitHub
     git push
     echo ""
-    echo -e "\e[34m✔  Commit concluído!\e[0m"
+    echo -e "\e[32m✔  Commit concluído!\e[0m"
     echo ""
 fi
