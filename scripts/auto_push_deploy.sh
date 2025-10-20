@@ -13,7 +13,7 @@ else
     # Envia para o GitHub
     git push
     echo ""
-    echo "\e[34m✔  Commit concluído!\e[0m"
+    echo -e "\e[34m✔  Commit concluído!\e[0m"
 fi
 
 # Deploy no Firebase Hosting
