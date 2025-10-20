@@ -1,8 +1,10 @@
 #!/bin/bash
 
+echo ""
+echo "=> Iniciando commit no GitHub..."
 if git diff-index --quiet HEAD --; then
     echo ""
-    echo "\e[34m🔹 Nenhuma alteração para commitar.\e[0m"
+    echo -e "\e[34m🔹 Nenhuma alteração para commitar.\e[0m"
     echo ""
 else
     # Adiciona alterações (modificadas e novas)
