@@ -1,0 +1,5 @@
+<!-- assets/logo.svg -->
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="120" rx="20" fill="#0059b2"/>
+  <text x="50%" y="52%" font-family="Inter, Arial, sans-serif" font-size="28" fill="white" text-anchor="middle" dominant-baseline="middle">RE</text>
+</svg>

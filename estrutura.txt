@@ -1,0 +1,15 @@
+/resende-express-admin/
+│
+├── index.html
+├── dashboard.html
+├── /js/
+│   ├── firebase.js
+│   ├── session.js
+│   ├── auth.js
+│   ├── crud.js
+│   └── ui.js
+├── /css/
+│   ├── style.css
+│   └── dashboard.css
+└── /assets/
+    └── logo.svg

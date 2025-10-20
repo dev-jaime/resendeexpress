@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resende Express Admin — Painel</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar">
+      <div class="sidebar-top">
+        <img src="assets/logo.svg" alt="logo" class="logo-small" />
+        <div id="companyHeader" class="company-header">
+          <div id="companyName" class="company-name">Empresa</div>
+          <div id="companyCnpj" class="company-cnpj muted">CNPJ</div>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <button data-view="customers" class="menu-btn">Clientes</button>
+        <button data-view="products" class="menu-btn">Produtos</button>
+        <button data-view="orders" class="menu-btn">Pedidos (visual)</button>
+        <button data-view="carts" class="menu-btn">Carrinhos (visual)</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button id="logoutBtn" class="btn outline">Sair</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <h2 id="pageTitle">Painel</h2>
+        <div id="statusBar" class="muted small">Carregando...</div>
+      </header>
+
+      <section id="content" class="content">
+        <!-- area onde UI carrega listas, formulários e tabelas -->
+      </section>
+    </main>
+  </div>
+
+  <!-- scripts -->
+  <script src="js/firebase.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/crud.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    // Inicializa a UI depois de carregar utilitários
+    document.addEventListener('DOMContentLoaded', () => {
+      UI.init();
+    });
+  </script>
+</body>
+</html>

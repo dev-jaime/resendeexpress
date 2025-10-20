@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teste Firebase Firestore</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f6f8;
+      color: #333;
+    }
+    h1 {
+      color: #1976d2;
+    }
+    pre {
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      overflow-x: auto;
+    }
+    .ok { color: #2e7d32; }
+    .error { color: #c62828; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Teste de Conexão com Firebase</h1>
+  <p>Este teste verifica se o Firestore está conectado corretamente.</p>
+  <p><strong>Resultado:</strong></p>
+  <pre id="output">Conectando...</pre>
+
+  <script type="module">
+    import "./js/firebase.js";
+
+    const out = document.getElementById("output");
+
+    async function testarConexao() {
+      try {
+        const { db, collection, addDoc, getDocs } = window.Firebase;
+
+        // Adiciona um documento temporário
+        const ref = await addDoc(collection(db, "testes"), {
+          criadoEm: new Date().toISOString(),
+          mensagem: "🔥 Conexão com Firestore funcionando!"
+        });
+
+        // Lê a coleção inteira
+        const snapshot = await getDocs(collection(db, "testes"));
+        const docs = [];
+        snapshot.forEach((d) => docs.push({ id: d.id, ...d.data() }));
+
+        out.innerHTML = 
+          `✅ <span class="ok">Sucesso!</span>\n` +
+          `Documento salvo com ID: ${ref.id}\n\n` +
+          `📄 Documentos na coleção 'testes':\n` +
+          JSON.stringify(docs, null, 2);
+      } catch (err) {
+        out.innerHTML = `❌ <span class="error">Erro ao conectar:</span>\n${err.message}`;
+      }
+    }
+
+    testarConexao();
+  </script>
+</body>
+</html>
