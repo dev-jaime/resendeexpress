@@ -5,5 +5,5 @@ echo ""
 echo "=== Iniciando deploy no Firebase Hosting..."
 npx firebase deploy --only hosting
 echo ""
-echo "✔  Deploy concluído!"
+echo -e "\e[34m✔  Deploy concluído!\e[0m"
 echo ""
