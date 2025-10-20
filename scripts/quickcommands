@@ -1,10 +1,4 @@
-
-commitgh -> faz commit para o GitHub
-
-deployfire -> faz o deploy para o Firebase
-
-deployall => faz o commit para o GitHub e o deploy para o Firebase
-
+| ------------ | ---------------------------------------------------------------------- | ----------------------------- |
 | Alias        | Ação                                                                   | Script executado              |
 | ------------ | ---------------------------------------------------------------------- | ----------------------------- |
 | `commitgh`   | Faz commit automático das alterações locais e envia ao GitHub.         | `scripts/auto_commit.sh`      |
