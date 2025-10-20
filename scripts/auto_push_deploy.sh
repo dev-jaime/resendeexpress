@@ -3,6 +3,7 @@
 # Script para commit, push e deploy automático no Firebase Hosting
 echo ""
 echo "=> Iniciando commit no GitHub..."
+echo ""
 if git diff-index --quiet HEAD --; then
     echo ""
     echo "\e[32m 🔹  Nenhuma alteração para commitar.\e[0m"
