@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Teste Firestore</title>
+</head>
+<body>
+  <h1>Teste Firestore</h1>
+  <pre id="output">Carregando...</pre>
+
+  <script type="module">
+    import { initializeApp } from "./js/firebase.js"; // ou https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+    // firebaseConfig deve ser o mesmo do seu firebase.js
+    const firebaseConfig = {
+        apiKey: "AIzaSyB08o9qqRQklCb5BckWswP6VbA8HXxVX1g",
+        authDomain: "resendeexpress.firebaseapp.com",
+        projectId: "resendeexpress",
+        storageBucket: "resendeexpress.firebasestorage.app",
+        messagingSenderId: "276573193219",
+        appId: "1:276573193219:web:0749aaa2a57326e299ba36",
+        measurementId: "G-E0Z9YWEXQR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const docRef = doc(db, 'companies/company001/customers/customer001');
+
+    getDoc(docRef).then(docSnap => {
+      const out = document.getElementById('output');
+      if (docSnap.exists()) {
+        out.textContent = JSON.stringify(docSnap.data(), null, 2);
+      } else {
+        out.textContent = 'Documento não existe';
+      }
+    }).catch(err => {
+      document.getElementById('output').textContent = 'Erro: ' + err;
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
