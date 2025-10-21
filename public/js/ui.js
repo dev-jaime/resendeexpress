@@ -111,6 +111,21 @@ const UI = {
       });
     });
 
+    // Quando clicar em um item da lista para abrir detalhes → lista cresce, form encolhe
+    listPane.querySelectorAll('.list-item').forEach(item => {
+      const header = item.querySelector('.list-header');
+      header.addEventListener('click', e => {
+        if (e.target.closest('button[data-action="edit"]')) return;
+        const isOpen = item.classList.contains('open');
+        listPane.querySelectorAll('.list-item.open').forEach(other => other.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+
+        // Ajusta classes do painel
+        this.panelEl.classList.add('form-collapsed');
+        this.panelEl.classList.remove('list-collapsed');
+      });
+    });
+
     // Preenche dados (edição)
     if (data) this.fillCustomerForm(form, data);
 

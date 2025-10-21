@@ -92,31 +92,65 @@
 }
 
 /* ==============================
-   PANELS LAYOUT
+   PANELS (Layout principal)
 ============================== */
 .panel {
-  display: flex;
-  gap: 18px;
-  height: calc(100vh - 120px); /* mantém a proporção visível */
+  display: grid;
+  grid-template-columns: var(--left-width, 55%) 1fr;
+  gap: 1em;
+  height: calc(100vh - 140px);
+  transition: grid-template-columns 0.3s ease;
+  align-items: start;
+  overflow: hidden;
 }
 
+/* Painel da lista (esquerda) */
 .panel-left {
-  width: 45%;
-  min-width: 260px;
+  min-width: 240px;
   overflow-y: auto;
-  padding-right: 10px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 1em;
+  min-height: 0;
 }
 
+/* Painel do formulário (direita) */
 .panel-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  min-width: 320px;
+  overflow-y: auto;
   background: #fff;
-  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 18px;
-  overflow-y: auto; /* rola apenas o formulário */
+  border: 1px solid #e5e7eb;
+  padding: 1em;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  min-height: 0;
+}
+
+/* Estado padrão */
+.panel { --left-width: 55%; }
+
+/* Quando o formulário é o foco (inputs ativos) */
+.panel.list-collapsed { --left-width: 25%; }
+
+/* Quando a lista é o foco (abrir detalhes) */
+.panel.form-collapsed { --left-width: 75%; }
+
+/* Mobile */
+@media (max-width: 900px) {
+  .panel {
+    display: block;
+    height: auto;
+  }
+  .panel-left,
+  .panel-right {
+    width: 100%;
+    min-width: 0;
+  }
+  .panel.list-collapsed .panel-left,
+  .panel.form-collapsed .panel-right {
+    display: none;
+  }
 }
 
 /* ==============================
@@ -151,12 +185,12 @@
 
 /* Colapsáveis (endereços adicionais) */
 .address-group.collapsed {
-  max-height: 0;       /* fecha totalmente */
-  padding: 0.7em;          /* remove padding ao colapsar */
-  margin-top: 0.5em;   /* opcional, só pra manter espaçamento visual */
+  max-height: 0;
+  padding: 0.7em;
+  margin-top: 0.5em;
   overflow: hidden;
   background: #f3f4f6;
-  border-width: 1px 1px 0 1px; /* mantém só borda superior/lateral, opcional */
+  border-width: 1px 1px 0 1px;
   cursor: pointer;
   transition: max-height 0.3s ease, padding 0.3s ease;
 }
@@ -271,7 +305,7 @@
 }
 
 /* ==============================
-   SCROLL STYLING (melhor UX)
+   SCROLL STYLING
 ============================== */
 .panel-left::-webkit-scrollbar,
 .panel-right::-webkit-scrollbar {
@@ -285,77 +319,4 @@
 .panel-left::-webkit-scrollbar-thumb:hover,
 .panel-right::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
-}
-
-/* ==============================
-   RESPONSIVE PANEL TRANSITIONS (GRID - robusto)
-   Substituir o bloco atual das classes .panel / .panel-left / .panel-right
-============================= */
-
-.panel {
-  display: grid;
-  /* coluna 1 = lista; coluna 2 = form. A segunda coluna (1fr) sempre recebe o restante. */
-  grid-template-columns: var(--left-width, 60%) 1fr;
-  gap: 1em;
-  height: calc(100vh - 140px);
-  transition: grid-template-columns 0.28s ease;
-  align-items: start;
-  overflow: hidden;
-}
-
-/* Lista (painel esquerdo) */
-.panel-left {
-  min-width: 220px;       /* evita colapso absoluto */
-  max-width: 100%;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  padding: 1em;
-}
-
-/* Form (painel direito) — sempre à direita dentro do grid */
-.panel-right {
-  min-width: 300px;       /* largura mínima aceitável para o form */
-  max-width: 100%;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  padding: 1em;
-  /* garante que o conteúdo do form "grude" à direita visualmente se houver espaçamento */
-  justify-self: end;
-}
-
-/* ----- Estados controlados pelo JS ----- */
-/* Padrão/sem foco: lista principal, form menor */
-.panel { --left-width: 60%; }
-
-/* Quando focar no formulário / editar (seu JS adiciona .list-collapsed)
-   Queremos a lista pequena e o form ocupando a maior parte do centro-direita */
-.panel.list-collapsed { --left-width: 20%; }
-
-/* Quando abrir detalhes (seu JS adiciona .form-collapsed)
-   Queremos a lista maior e o form menor, mas sempre à direita */
-.panel.form-collapsed { --left-width: 70%; }
-
-/* IMPORTANTE: Esses valores são exemplos. Se quiser exatamente 60/20/20
-   relativos à *área entre sidebar e borda direita*, ajuste os percentuais. */
-
-/* Mobile: empilha */
-@media (max-width: 900px) {
-  .panel {
-    display: block;
-    height: auto;
-  }
-  .panel-left,
-  .panel-right {
-    width: 100%;
-    min-width: 0;
-  }
-  /* para mobile, esconder o painel oposto quando o estado exigir pode ser aceitável */
-  .panel.list-collapsed .panel-left,
-  .panel.form-collapsed .panel-right {
-    display: none;
-  }
 }
