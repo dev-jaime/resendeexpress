@@ -68,66 +68,18 @@ const UI = {
   // =====================
   loadCustomers() {
     const path = `${this.companyPath}/customers`;
-
-    // cria painel
     this.content.innerHTML = `
-        <div class="panel">
+      <div class="panel">
         <div class="panel-left" id="listPane"></div>
         <div class="panel-right" id="formPane"></div>
-        </div>
+      </div>
     `;
     this.panelEl = this.content.querySelector('.panel');
-
-    // renderiza formulário
     this.renderCustomerForm();
 
-    // define estado inicial baseado na largura da tela
-    if (window.innerWidth <= 1000) this.setPanelState('list-focus');
-    else this.setPanelState('default');
-
-    // adapta ao redimensionamento
-    this._panelResizeHandler = () => {
-      // se for desktop, preferimos 'default' (lado-a-lado).
-      if (window.innerWidth > 1000) {
-        this.setPanelState('default');
-      } else {
-        // Ao entrar em modo empilhado, mantenha o foco na lista por padrão,
-        // a menos que algum input do form já esteja focado.
-        const formPane = document.getElementById('formPane');
-        if (formPane && formPane.contains(document.activeElement)) {
-          this.setPanelState('form-focus');
-        } else {
-          this.setPanelState('list-focus');
-        }
-      }
-    };
-    window.addEventListener('resize', this._panelResizeHandler);
-
-
-    // carrega dados da lista
     this.unsubscribe = window.CRUD.subscribe(path, arr => {
-        this.renderCustomerList(arr);
+      this.renderCustomerList(arr);
     }, 'createdAt');
-  },
-
-  // função que gerencia classes de foco / estado do painel
-  setPanelState(state) {
-    if (!this.panelEl) return;
-
-    // remove todas as classes controladas
-    this.panelEl.classList.remove('form-focus', 'list-focus', 'form-collapsed', 'list-collapsed');
-
-    // Se estivermos em modo empilhado (tablet/mobile) usamos form-focus / list-focus
-    const stacked = window.innerWidth <= 1000;
-
-    if (state === 'form-focus') {
-      if (stacked) this.panelEl.classList.add('form-focus');
-      else this.panelEl.classList.add('form-collapsed'); // desktop: colapsa lista para favorecer o form
-    } else if (state === 'list-focus') {
-      if (stacked) this.panelEl.classList.add('list-focus');
-      else this.panelEl.classList.add('list-collapsed'); // desktop: colapsa form para favorecer a lista
-    }
-    // 'default' = sem classes adicionais (já removidas)
   },
 
   renderCustomerForm(data = null) {
@@ -152,21 +104,11 @@ const UI = {
     const form = document.getElementById('customerForm');
 
     // Focus → colapsa lista
-    // Focus — usamos focusin / focusout para detectar qualquer foco dentro do form
-    form.addEventListener('focusin', () => {
-      // quando um input recebe foco, garante que o form fique em destaque
-      this.setPanelState('form-focus');
-    });
-
-    // Quando perder todo foco dentro do form, voltamos ao estado de lista
-    form.addEventListener('focusout', () => {
-      // delay curto para permitir foco em outro elemento do form (p.ex. tabindex)
-      setTimeout(() => {
-        if (!form.contains(document.activeElement)) {
-          // somente volta ao estado de lista se não estivermos no modo de edição forçada
-          this.setPanelState('list-focus');
-        }
-      }, 50);
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+      el.addEventListener('focus', () => {
+        this.panelEl.classList.add('list-collapsed');
+        this.panelEl.classList.remove('form-collapsed');
+      });
     });
 
     // Quando clicar em um item da lista para abrir detalhes → lista cresce, form encolhe
@@ -189,7 +131,7 @@ const UI = {
 
     document.getElementById('cancelCustomer').addEventListener('click', () => {
       this.renderCustomerForm();
-      this.setPanelState('list-focus'); // volta ao estado de lista em mobile; em desktop será list-collapsed
+      this.panelEl.classList.remove('list-collapsed', 'form-collapsed');
     });
 
     form.addEventListener('submit', async e => {
@@ -365,24 +307,8 @@ const UI = {
         const id = btn.closest('.list-item').dataset.id;
         const doc = arr.find(x => x.id === id);
         this.renderCustomerForm(doc);
-
-        // comportamento responsivo: em telas empilhadas queremos que o form suba
-        if (window.innerWidth <= 1000) {
-          this.setPanelState('form-focus');
-        } else {
-          // no desktop lado-a-lado, colapsamos a lista para dar prioridade ao form
-          this.panelEl.classList.add('list-collapsed');
-          this.panelEl.classList.remove('form-collapsed');
-        }
-
-        // foca o primeiro input do form para disparar o comportamento natural
-        setTimeout(() => {
-          const formPane = document.getElementById('formPane');
-          if (formPane) {
-            const firstInput = formPane.querySelector('input, textarea, select');
-            if (firstInput) firstInput.focus();
-          }
-        }, 50);
+        this.panelEl.classList.add('list-collapsed');
+        this.panelEl.classList.remove('form-collapsed');
       });
     });
   },

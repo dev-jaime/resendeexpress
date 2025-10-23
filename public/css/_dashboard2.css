@@ -1,9 +1,19 @@
 /* ==============================
    DASHBOARD LAYOUT
 ============================== */
+/* garante que o html/body tenham 100% de altura (aplicar no topo do CSS se não existir) */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* evita scroll da página inteira */
+}
+
 #app {
   display: flex;
-  min-height: 100vh;
+  min-height: 100%;
+  height: 100%;
+  /* flex-direction: row; */
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   background: #f9fafb;
   color: #222;
@@ -72,54 +82,47 @@
    MAIN AREA
 ============================== */
 .main {
-  flex: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  min-height: 0; /* importante para children com overflow funcionarem */
+  height: 100%;
 }
 
 .topbar {
-  padding: 18px 22px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid #f0f4f8;
-  background: #fff;
+  /* se quiser fixar uma altura, defina: height: 64px; */
+  flex: 0 0 auto;
+  z-index: 10;
 }
 
 .content {
-  padding: 22px;
-  overflow: hidden;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* permite que .panel respeite o espaço disponível */
+  height: 100%;
+  overflow: hidden; /* impede rolagem da página dentro do content */
 }
 
 /* ==============================
-   PANELS - LAYOUT & RESPONSIVIDADE
+   PANELS (Layout principal)
 ============================== */
-:root {
-  --list-preview-height: 180px;
-  --form-preview-height: 140px;
-  --gap: 16px;
-}
-
-/* Desktop - lado a lado com rolagem independente */
 .panel {
   display: grid;
   grid-template-columns: var(--left-width, 55%) 1fr;
-  gap: var(--gap);
-  height: calc(100vh - 140px);
-  transition: grid-template-columns 0.28s ease;
-  align-items: stretch;
-  min-height: 0;
+  gap: 1em;
+  flex: 1 1 auto;
+  min-height: 0;    /* CRÍTICO para scroll interno */
+  height: 100%;
+  transition: grid-template-columns 0.3s ease;
   overflow: hidden;
 }
 
+/* Painel da lista e de form */
 .panel-left,
 .panel-right {
-  min-height: 0;
-  overflow-y: auto;
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  padding: 1em;
+  min-height: 0;    /* CRÍTICO */
+  overflow-y: auto; /* ativar rolagem interna */
 }
 
 .panel-left {
@@ -131,69 +134,20 @@
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
+/* Estado padrão */
 .panel { --left-width: 55%; }
-.panel.list-collapsed { --left-width: 35%; }
+
+/* Quando o formulário é o foco (inputs ativos) */
+.panel.list-collapsed { --left-width: 25%; }
+
+/* Quando a lista é o foco (abrir detalhes) */
 .panel.form-collapsed { --left-width: 75%; }
 
-/* Tablet - empilhamento com "split inteligente" */
-@media (max-width: 1000px) {
-  .panel {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    height: calc(100vh - 120px);
-  }
-  .panel-left, .panel-right {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  /* foco em form → lista reduzida */
-  .panel.form-focus .panel-left {
-    max-height: var(--list-preview-height);
-    overflow-y: auto;
-  }
-  .panel.form-focus .panel-right {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: calc(100vh - var(--list-preview-height) - 120px);
-    overflow-y: auto;
-  }
-
-  /* foco em lista → form reduzido */
-  .panel.list-focus .panel-left {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: calc(100vh - var(--form-preview-height) - 120px);
-    overflow-y: auto;
-  }
-  .panel.list-focus .panel-right {
-    max-height: var(--form-preview-height);
-    overflow-y: auto;
-  }
-
-  /* padrão (sem foco) */
-  .panel:not(.form-focus):not(.list-focus) .panel-left {
-    flex: 1 1 auto;
-    max-height: calc(100vh - var(--form-preview-height) - 120px);
-    overflow-y: auto;
-  }
-  .panel:not(.form-focus):not(.list-focus) .panel-right {
-    max-height: var(--form-preview-height);
-    overflow-y: auto;
-  }
-}
-
-/* Mobile - um painel por vez */
-@media (max-width: 600px) {
+/* Mobile */
+@media (max-width: 900px) {
+  html, body { overflow: auto; } /* em mobile, permitir scroll da página se necessário */
   .panel { display: block; height: auto; }
   .panel-left, .panel-right { width: 100%; max-height: none; }
-
-  .panel.form-focus .panel-left { display: none; }
-  .panel.form-focus .panel-right { display: block; }
-
-  .panel.list-focus .panel-right { display: none; }
-  .panel.list-focus .panel-left { display: block; }
 }
 
 /* ==============================
@@ -225,6 +179,8 @@
   border-radius: 4px;
   margin-top: 2px;
 }
+
+/* Colapsáveis (endereços adicionais) */
 .address-group.collapsed {
   max-height: 0;
   padding: 0.7em;
@@ -247,7 +203,7 @@
 }
 
 /* ==============================
-   LIST ITEMS
+   LIST ITEMS (Customer list)
 ============================== */
 .list-item {
   background: #fff;
@@ -261,25 +217,30 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   background: #fcfcfc;
 }
+
 .list-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
 }
+
 .item-title {
   font-weight: 700;
   font-size: 1.05em;
 }
+
 .item-sub {
   color: #555;
   font-size: 0.9em;
   margin-top: 2px;
 }
+
 .item-actions {
   display: flex;
   gap: 8px;
 }
+
 .list-details {
   margin-top: 10px;
   border-top: 1px solid #eee;
@@ -288,6 +249,7 @@
   font-size: 0.9em;
   display: none;
 }
+
 .list-item.open .list-details {
   display: block;
 }
