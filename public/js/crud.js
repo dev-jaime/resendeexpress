@@ -14,7 +14,8 @@ const {
   deleteDoc,
   onSnapshot,
   query,
-  orderBy
+  orderBy,
+  serverTimestamp
 } = window.Firebase;
 
 export const CRUD = {
@@ -48,25 +49,12 @@ export const CRUD = {
     });
   },
 
-  /*
-  async create(collectionPath, data = {}) {
-    const colRef = collectionPathToRef(collectionPath);
-    const payload = { ...data };
-    // tenta adicionar campos de meta
-    try {
-      payload.createdAt = payload.createdAt || Date.now();
-      const res = await addDoc(colRef, payload);
-      return { id: res.id, ...payload };
-    } catch (err) {
-      console.error('CRUD.create', err);
-      throw err;
-    }
-  },
-  */
   async create(collectionPath, data = {}, customIdTimestamp = true) {
     const colRef = collectionPathToRef(collectionPath);
-    const payload = { ...data };
-    payload.createdAt = payload.createdAt || Date.now();
+    const payload = { ...data,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+     };
 
     try {
       let res, customId;
@@ -104,20 +92,18 @@ export const CRUD = {
     }
   },
   */
-  async update(collectionPath, id, data) {
-    // cria referência direta ao doc
+  async update(collectionPath, id, data = {}) {
     const ref = doc(db, collectionPath, id);
-    await updateDoc(ref, data);
-  },
+    const payload = {
+      ...data,
+      updatedAt: serverTimestamp(), // define timestamp do servidor
+    };
 
-  async set(collectionPath, id, data = {}) {
     try {
-      const ref = doc(db, collectionPath, id);
-      const payload = { ...data, updatedAt: Date.now() };
-      await setDoc(ref, payload, { merge: true });
+      await updateDoc(ref, payload);
       return true;
     } catch (err) {
-      console.error('CRUD.set', err);
+      console.error("CRUD.update", err);
       throw err;
     }
   },

@@ -407,11 +407,32 @@ const UI = {
     formPane.innerHTML = `
       <h3>${data ? 'Editar produto' : 'Novo produto'}</h3>
       <form id="productForm" class="entity-form">
-        <label>SKU</label><input name="sku" />
+        <label>SKU</label><input name="sku" required />
+        <label>EAN</label><input name="ean" />
         <label>Nome</label><input name="name" required />
+        <label>Descrição</label><textarea name="description"></textarea>
         <label>Preço (em centavos)</label><input type="number" name="priceCents" />
         <label>Estoque</label><input type="number" name="stock" />
+        <label>Unidade</label><input name="unit" />
+        <label>Imagens (URLs, separadas por vírgula)</label><textarea name="images"></textarea>
+        <label>Categorias (separadas por vírgula)</label><input name="categories" />
+        <label>Disponível online</label>
+        <select name="availableOnline">
+          <option value="true">Sim</option>
+          <option value="false">Não</option>
+        </select>
+        <label>ID do catálogo WhatsApp</label><input name="whatsappCatalogId" />
         <label>Visibilidade</label><input name="visibility" placeholder="public/private" />
+        <label>Ativo</label>
+        <select name="active">
+          <option value="true">Sim</option>
+          <option value="false">Não</option>
+        </select>
+        <fieldset>
+          <legend>Meta</legend>
+          <label>Peso (g)</label><input type="number" name="meta_weightGrams" />
+          <label>Marca</label><input name="meta_brand" />
+        </fieldset>
         <div class="form-actions">
           <button type="submit" class="btn primary">${data ? 'Salvar' : 'Criar'}</button>
           ${data ? '<button type="button" id="delProduct" class="btn danger">Remover</button>' : ''}
@@ -419,34 +440,74 @@ const UI = {
         </div>
       </form>
     `;
+
     const form = document.getElementById('productForm');
+
+    // Preencher campos em edição
     if (data) {
       form.elements['sku'].value = data.sku || '';
+      form.elements['ean'].value = data.ean || '';
       form.elements['name'].value = data.name || '';
+      form.elements['description'].value = data.description || '';
       form.elements['priceCents'].value = data.priceCents || 0;
       form.elements['stock'].value = data.stock || 0;
+      form.elements['unit'].value = data.unit || '';
+      form.elements['images'].value = (data.images || []).join(', ');
+      form.elements['categories'].value = (data.categories || []).join(', ');
+      form.elements['availableOnline'].value = String(data.availableOnline || false);
+      form.elements['whatsappCatalogId'].value = data.whatsappCatalogId || '';
       form.elements['visibility'].value = data.visibility || '';
+      form.elements['active'].value = String(data.active || true);
+      form.elements['meta_weightGrams'].value = (data.meta && data.meta.weightGrams) || 0;
+      form.elements['meta_brand'].value = (data.meta && data.meta.brand) || '';
     }
-    document.getElementById('cancelProduct').addEventListener('click', () => this.renderProductForm());
+
+    // Cancelar
+    document.getElementById('cancelProduct').addEventListener('click', () => {
+      this.renderProductForm();
+      if (window.innerWidth <= 1000) this.setPanelState('list-focus');
+      else this.panelEl.classList.remove('form-collapsed');
+    });
+
+    // Submit
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const payload = {
         sku: form.elements['sku'].value.trim(),
+        ean: form.elements['ean'].value.trim(),
         name: form.elements['name'].value.trim(),
+        description: form.elements['description'].value.trim(),
         priceCents: Number(form.elements['priceCents'].value || 0),
         stock: Number(form.elements['stock'].value || 0),
-        visibility: form.elements['visibility'].value.trim()
+        unit: form.elements['unit'].value.trim(),
+        images: form.elements['images'].value.split(',').map(s => s.trim()).filter(Boolean),
+        categories: form.elements['categories'].value.split(',').map(s => s.trim()).filter(Boolean),
+        availableOnline: form.elements['availableOnline'].value === 'true',
+        whatsappCatalogId: form.elements['whatsappCatalogId'].value.trim(),
+        visibility: form.elements['visibility'].value.trim(),
+        active: form.elements['active'].value === 'true',
+        meta: {
+          weightGrams: Number(form.elements['meta_weightGrams'].value || 0),
+          brand: form.elements['meta_brand'].value.trim()
+        }
       };
+
       const path = `${this.companyPath}/products`;
-      if (data) {
-        await window.CRUD.update(path, data.id, payload);
-        this.renderProductForm();
-      } else {
-        await window.CRUD.create(path, payload);
-        form.reset();
+      try {
+        if (data) {
+          await window.CRUD.update(path, data.id, payload);
+          this.renderProductForm();
+        } else {
+          await window.CRUD.create(path, payload);
+          form.reset();
+        }
+      } catch (err) {
+        console.error('Erro ao salvar produto:', err);
+        alert('Erro ao salvar produto. Veja o console.');
       }
     });
 
+    // Deletar
     if (data) {
       document.getElementById('delProduct').addEventListener('click', async () => {
         if (!confirm('Remover produto?')) return;
@@ -463,23 +524,62 @@ const UI = {
       listPane.innerHTML = '<div class="muted">Nenhum produto cadastrado.</div>';
       return;
     }
+
     listPane.innerHTML = arr.map(p => `
-      <div class="list-item">
-        <div>
-          <div class="item-title">${escapeHtml(p.name || '—')}</div>
-          <div class="item-sub">SKU ${escapeHtml(p.sku||'')} • R$ ${(Number(p.priceCents||0)/100).toFixed(2)} • estoque: ${escapeHtml(String(p.stock||0))}</div>
+      <div class="list-item" data-id="${p.id}">
+        <div class="list-header">
+          <div>
+            <div class="item-title">${escapeHtml(p.name || '—')}</div>
+            <div class="item-sub">
+              SKU: ${escapeHtml(p.sku || '—')} • R$ ${(Number(p.priceCents||0)/100).toFixed(2)} • estoque: ${p.stock || 0}
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="btn small" data-action="edit">Editar</button>
+          </div>
         </div>
-        <div class="item-actions">
-          <button data-id="${p.id}" class="btn small" data-action="edit">Editar</button>
+        <div class="list-details">
+          <div><strong>EAN:</strong> ${escapeHtml(p.ean || '—')}</div>
+          <div><strong>Descrição:</strong> ${escapeHtml(p.description || '—')}</div>
+          <div><strong>Unidade:</strong> ${escapeHtml(p.unit || '—')}</div>
+          <div><strong>Imagens:</strong> ${escapeHtml((p.images || []).join(', '))}</div>
+          <div><strong>Categorias:</strong> ${escapeHtml((p.categories || []).join(', '))}</div>
+          <div><strong>Disponível online:</strong> ${p.availableOnline ? 'Sim' : 'Não'}</div>
+          <div><strong>ID Catálogo WA:</strong> ${escapeHtml(p.whatsappCatalogId || '—')}</div>
+          <div><strong>Visibilidade:</strong> ${escapeHtml(p.visibility || '—')}</div>
+          <div><strong>Ativo:</strong> ${p.active ? 'Sim' : 'Não'}</div>
+          <div><strong>Meta:</strong> Peso ${p.meta?.weightGrams || 0}g • Marca: ${escapeHtml(p.meta?.brand || '—')}</div>
+          <div><strong>Criado em:</strong> ${formatDate(p.createdAt)}</div>
+          <div><strong>Atualizado em:</strong> ${formatDate(p.updatedAt)}</div>
         </div>
       </div>
     `).join('');
 
+    // Toggle detalhes
+    listPane.querySelectorAll('.list-item').forEach(item => {
+      const header = item.querySelector('.list-header');
+      header.addEventListener('click', e => {
+        if (e.target.closest('button[data-action="edit"]')) return;
+        const isOpen = item.classList.contains('open');
+        listPane.querySelectorAll('.list-item.open').forEach(other => other.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+        this.panelEl.classList.add('form-collapsed');
+        this.panelEl.classList.remove('list-collapsed');
+      });
+    });
+
+    // Botão editar
     listPane.querySelectorAll('[data-action="edit"]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.dataset.id;
+      btn.addEventListener('click', () => {
+        const id = btn.closest('.list-item').dataset.id;
         const doc = arr.find(x => x.id === id);
         this.renderProductForm(doc);
+        if (window.innerWidth <= 1000) this.setPanelState('form-focus');
+        else this.panelEl.classList.add('list-collapsed');
+        setTimeout(() => {
+          const firstInput = document.getElementById('formPane').querySelector('input, textarea, select');
+          if (firstInput) firstInput.focus();
+        }, 50);
       });
     });
   },
@@ -547,6 +647,56 @@ function formatCnpj(c) {
   if (!c) return '—';
   const s = String(c).replace(/\D/g, '').padStart(14, '0');
   return `${s.substr(0,2)}.${s.substr(2,3)}.${s.substr(5,3)}/${s.substr(8,4)}-${s.substr(12,2)}`;
+}
+
+// Utils: normaliza valor vindo do Firestore para um objeto Date válido
+function toDateFromFirestore(ts) {
+  if (!ts) return null;
+
+  // Caso já seja um JS Date
+  if (ts instanceof Date) return ts;
+
+  // Firebase v9 modular Timestamp (possui toDate)
+  if (typeof ts === 'object' && typeof ts.toDate === 'function') {
+    return ts.toDate();
+  }
+
+  // Objeto { seconds, nanoseconds } (às vezes retornado)
+  if (typeof ts === 'object' && ts.seconds !== undefined) {
+    const ms = Number(ts.seconds) * 1000 + Math.floor((ts.nanoseconds || 0) / 1e6);
+    return new Date(ms);
+  }
+
+  // Número (supondo milissegundos)
+  if (typeof ts === 'number') {
+    // Se for um timestamp em segundos (ex.: 169xxx), detecta e converte
+    if (ts < 1e12) return new Date(ts * 1000); // provavelmente seconds -> multiplica
+    return new Date(ts); // ms
+  }
+
+  // String ISO
+  if (typeof ts === 'string') {
+    const d = new Date(ts);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  return null;
+}
+
+// Formata Date para string legível; opcionalmente força fuso horário (ex: 'America/Manaus')
+function formatDate(ts, timeZone = undefined) {
+  const d = toDateFromFirestore(ts);
+  if (!d) return '—';
+  try {
+    // Se timeZone for passado, usamos esse fuso; senão, usa o do usuário
+    const opts = { year: 'numeric', month: '2-digit', day: '2-digit',
+                   hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    if (timeZone) opts.timeZone = timeZone;
+    return d.toLocaleString(undefined, opts);
+  } catch (err) {
+    // fallback simples
+    return d.toLocaleString();
+  }
 }
 
 // expose UI globally
