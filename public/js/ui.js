@@ -111,6 +111,38 @@ const UI = {
   },
 
   // função que gerencia classes de foco / estado do painel
+  // função que gerencia classes de foco / estado do painel
+  setPanelState(state) {
+    if (!this.panelEl) return;
+
+    // remove todas as classes controladas
+    this.panelEl.classList.remove(
+      'form-focus', 'list-focus', 'form-collapsed', 'list-collapsed'
+    );
+
+    const stacked = window.innerWidth <= 1000; // tablet/mobile
+
+    if (state === 'form-focus') {
+      if (stacked) {
+        // modo empilhado
+        this.panelEl.classList.add('form-focus');
+      } else {
+        // desktop: expande o form, diminui a lista
+        this.panelEl.classList.add('form-focus');
+      }
+    } else if (state === 'list-focus') {
+      if (stacked) {
+        // modo empilhado
+        this.panelEl.classList.add('list-focus');
+      } else {
+        // desktop: expande a lista, diminui o form
+        this.panelEl.classList.add('list-focus');
+      }
+    }
+    // 'default' = sem classes adicionais (painel volta ao estado padrão)
+  },
+
+  /*
   setPanelState(state) {
     if (!this.panelEl) return;
 
@@ -129,6 +161,7 @@ const UI = {
     }
     // 'default' = sem classes adicionais (já removidas)
   },
+  */
 
   renderCustomerForm(data = null) {
     const formPane = document.getElementById('formPane');
@@ -646,8 +679,14 @@ function escapeHtml(s) {
 
 function formatCnpj(c) {
   if (!c) return '—';
-  const s = String(c).replace(/\D/g, '').padStart(14, '0');
-  return `${s.substr(0,2)}.${s.substr(2,3)}.${s.substr(5,3)}/${s.substr(8,4)}-${s.substr(12,2)}`;
+  const digits = c.replace(/\D/g, '');
+  if (digits.length === 14) {
+    return digits.replace(
+      /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+      '$1.$2.$3/$4-$5'
+    );
+  }
+  return c;
 }
 
 // Utils: normaliza valor vindo do Firestore para um objeto Date válido

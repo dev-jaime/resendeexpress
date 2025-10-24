@@ -18,24 +18,6 @@ const {
   serverTimestamp
 } = window.Firebase;
 
-/*
-  async read(collectionPath, orderField = 'createdAt') {
-    const colRef = collectionPathToRef(collectionPath);
-    try {
-      if (orderField) {
-        const q = query(colRef, orderBy(orderField));
-        const snap = await getDocs(q);
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      } else {
-        const snap = await getDocs(colRef);
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      }
-    } catch (err) {
-      console.error('CRUD.read', err);
-      throw err;
-    }
-      */
-
 export const CRUD = {
   // read once (array of docs)
     async read(collectionPath, orderField = 'createdAt') {
@@ -93,21 +75,6 @@ export const CRUD = {
     }
   },
 
-  /*
-  async update(collectionPath, docId, data = {}) {
-    try {
-      const docRef = doc(collectionPathToRef(collectionPath).path.split('/')[0] ? db : null, ...[]); // placeholder to satisfy linter
-      // build reference
-      const ref = doc(db, ...collectionPath.split('/').concat([docId]));
-      const payload = { ...data, updatedAt: Date.now() };
-      await updateDoc(ref, payload);
-      return true;
-    } catch (err) {
-      console.error('CRUD.update', err);
-      throw err;
-    }
-  },
-  */
   async update(collectionPath, id, data = {}) {
     const ref = doc(db, collectionPath, id);
     const payload = {
@@ -124,18 +91,6 @@ export const CRUD = {
     }
   },
 
-  /*
-  async delete(collectionPath, docId) {
-    try {
-      const ref = doc(db, ...collectionPath.split('/').concat([docId]));
-      await deleteDoc(ref);
-      return true;
-    } catch (err) {
-      console.error('CRUD.delete', err);
-      throw err;
-    }
-  }
-    */
   async delete(collectionPath, id) {
     const ref = doc(db, collectionPath, id);
     await deleteDoc(ref);

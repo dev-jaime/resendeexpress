@@ -134,6 +134,8 @@
 .panel { --left-width: 55%; }
 .panel.list-collapsed { --left-width: 35%; }
 .panel.form-collapsed { --left-width: 75%; }
+.panel.form-focus { --left-width: 35%; } /* lista diminui, form expande */
+.panel.list-focus { --left-width: 65%; } /* lista maior, form menor */
 
 /* Tablet - empilhamento com "split inteligente" */
 @media (max-width: 1000px) {
