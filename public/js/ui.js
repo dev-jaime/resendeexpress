@@ -756,61 +756,58 @@ function formatDate(ts, timeZone = undefined) {
 // ===============
 // MODAL DE CONFIRMAÇÃO PADRÃO
 // ===============
-async function showConfirmModal({ title = 'Confirmar ação', message = '', confirmText = 'Confirmar', cancelText = 'Cancelar' } = {}) {
+async function showConfirmModal({
+  title = 'Confirmar ação',
+  message = '',
+  confirmText = 'Confirmar',
+  cancelText = 'Cancelar'
+} = {}) {
   return new Promise((resolve) => {
-    // Cria o backdrop e o conteúdo do modal
-    const modal = document.createElement('div');
-    modal.className = 'modal-backdrop';
-    modal.innerHTML = `
-      <div class="modal">
-        <h3 class="modal-title">${title}</h3>
-        <p class="modal-message"></p>
-        <div class="modal-actions">
-          <button class="btn outline cancel-btn">${cancelText}</button>
-          <button class="btn danger confirm-btn">${confirmText}</button>
-        </div>
-      </div>
-    `;
+    const modal = document.getElementById('confirmModal');
+    if (!modal) {
+      console.error('Modal #confirmModal não encontrado no DOM');
+      return resolve(false);
+    }
 
-    // Insere o HTML da mensagem (permite <strong>, <em>, etc.)
-    const messageEl = modal.querySelector('.modal-message');
-    messageEl.innerHTML = message;
+    // Seletores internos
+    const titleEl = modal.querySelector('#confirmTitle');
+    const messageEl = modal.querySelector('#confirmMessage');
+    const okBtn = modal.querySelector('#confirmOk');
+    const cancelBtn = modal.querySelector('#confirmCancel');
 
-    document.body.appendChild(modal);
+    // Preenche conteúdo
+    titleEl.textContent = title;
+    messageEl.innerHTML = message; // permite <strong>, etc.
+    okBtn.textContent = confirmText;
+    cancelBtn.textContent = cancelText;
+
+    // Mostra modal
+    modal.classList.remove('hidden');
     document.body.classList.add('modal-open');
 
-    // Foco automático no botão confirmar
-    const confirmBtn = modal.querySelector('.confirm-btn');
-    const cancelBtn = modal.querySelector('.cancel-btn');
-    confirmBtn.focus();
-
-    // === Fechamento e retorno ===
+    // === Eventos ===
     const close = (result) => {
-      modal.classList.add('closing');
-      setTimeout(() => {
-        modal.remove();
-        document.body.classList.remove('modal-open');
-        resolve(result);
-      }, 150);
+      modal.classList.add('hidden');
+      document.body.classList.remove('modal-open');
+
+      // remove listeners para evitar acumular
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      document.removeEventListener('keydown', onKey);
+      resolve(result);
     };
 
-    // Eventos de clique
-    confirmBtn.addEventListener('click', () => close(true));
-    cancelBtn.addEventListener('click', () => close(false));
+    const onOk = () => close(true);
+    const onCancel = () => close(false);
 
-    // Fecha com ESC ou Enter
-    modal.addEventListener('keydown', (e) => {
+    const onKey = (e) => {
       if (e.key === 'Escape') close(false);
       if (e.key === 'Enter') close(true);
-    });
+    };
 
-    // Captura teclas enquanto o modal estiver aberto
-    confirmBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') close(false);
-    });
-    cancelBtn.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') close(true);
-    });
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    document.addEventListener('keydown', onKey);
   });
 }
 
