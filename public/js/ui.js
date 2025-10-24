@@ -403,13 +403,39 @@ const UI = {
   // =====================
   loadProducts() {
     const path = `${this.companyPath}/products`;
+
+    // cria painel
     this.content.innerHTML = `
       <div class="panel">
         <div class="panel-left" id="listPane"></div>
         <div class="panel-right" id="formPane"></div>
       </div>
     `;
+    this.panelEl = this.content.querySelector('.panel');
+
+    // renderiza formulário vazio
     this.renderProductForm();
+
+    // define estado inicial baseado na largura da tela
+    if (window.innerWidth <= 1000) this.setPanelState('list-focus');
+    else this.setPanelState('default');
+
+    // adapta ao redimensionamento
+    this._panelResizeHandler = () => {
+      if (window.innerWidth > 1000) {
+        this.setPanelState('default'); // desktop lado-a-lado
+      } else {
+        const formPane = document.getElementById('formPane');
+        if (formPane && formPane.contains(document.activeElement)) {
+          this.setPanelState('form-focus');
+        } else {
+          this.setPanelState('list-focus');
+        }
+      }
+    };
+    window.addEventListener('resize', this._panelResizeHandler);
+
+    // subscribe
     this.unsubscribe = window.CRUD.subscribe(path, arr => this.renderProductList(arr), 'name');
   },
 
@@ -454,34 +480,33 @@ const UI = {
 
     const form = document.getElementById('productForm');
 
-    // Preencher campos em edição
-    if (data) {
-      form.elements['sku'].value = data.sku || '';
-      form.elements['ean'].value = data.ean || '';
-      form.elements['name'].value = data.name || '';
-      form.elements['description'].value = data.description || '';
-      form.elements['priceCents'].value = data.priceCents || 0;
-      form.elements['stock'].value = data.stock || 0;
-      form.elements['unit'].value = data.unit || '';
-      form.elements['images'].value = (data.images || []).join(', ');
-      form.elements['categories'].value = (data.categories || []).join(', ');
-      form.elements['availableOnline'].value = String(data.availableOnline || false);
-      form.elements['whatsappCatalogId'].value = data.whatsappCatalogId || '';
-      form.elements['visibility'].value = data.visibility || '';
-      form.elements['active'].value = String(data.active || true);
-      form.elements['meta_weightGrams'].value = (data.meta && data.meta.weightGrams) || 0;
-      form.elements['meta_brand'].value = (data.meta && data.meta.brand) || '';
-    }
-
-    // Cancelar
-    document.getElementById('cancelProduct').addEventListener('click', () => {
-      this.renderProductForm();
-      if (window.innerWidth <= 1000) this.setPanelState('list-focus');
-      else this.panelEl.classList.remove('form-collapsed');
+    // ⚡ foco em qualquer input → form se expande (igual clientes)
+    form.addEventListener('focusin', () => {
+      this.setPanelState('form-focus');
+    });
+    form.addEventListener('focusout', () => {
+      setTimeout(() => {
+        if (!form.contains(document.activeElement)) {
+          this.setPanelState('list-focus');
+        }
+      }, 50);
     });
 
-    // Submit
-    form.addEventListener('submit', async (e) => {
+    // cancelar
+    document.getElementById('cancelProduct').addEventListener('click', () => {
+      this.renderProductForm();
+      this.setPanelState(window.innerWidth <= 1000 ? 'list-focus' : 'default');
+    });
+
+    // preencher campos em edição
+    if (data) {
+      for (const key in data) {
+        if (form.elements[key]) form.elements[key].value = data[key];
+      }
+    }
+
+    // submit
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       const payload = {
         sku: form.elements['sku'].value.trim(),
@@ -502,7 +527,6 @@ const UI = {
           brand: form.elements['meta_brand'].value.trim()
         }
       };
-
       const path = `${this.companyPath}/products`;
       try {
         if (data) {
@@ -518,12 +542,11 @@ const UI = {
       }
     });
 
-    // Deletar
+    // deletar
     if (data) {
       document.getElementById('delProduct').addEventListener('click', async () => {
         if (!confirm('Remover produto?')) return;
-        const path = `${this.companyPath}/products`;
-        await window.CRUD.delete(path, data.id);
+        await window.CRUD.delete(`${this.companyPath}/products`, data.id);
         this.renderProductForm();
       });
     }
@@ -549,24 +572,11 @@ const UI = {
             <button class="btn small" data-action="edit">Editar</button>
           </div>
         </div>
-        <div class="list-details">
-          <div><strong>EAN:</strong> ${escapeHtml(p.ean || '—')}</div>
-          <div><strong>Descrição:</strong> ${escapeHtml(p.description || '—')}</div>
-          <div><strong>Unidade:</strong> ${escapeHtml(p.unit || '—')}</div>
-          <div><strong>Imagens:</strong> ${escapeHtml((p.images || []).join(', '))}</div>
-          <div><strong>Categorias:</strong> ${escapeHtml((p.categories || []).join(', '))}</div>
-          <div><strong>Disponível online:</strong> ${p.availableOnline ? 'Sim' : 'Não'}</div>
-          <div><strong>ID Catálogo WA:</strong> ${escapeHtml(p.whatsappCatalogId || '—')}</div>
-          <div><strong>Visibilidade:</strong> ${escapeHtml(p.visibility || '—')}</div>
-          <div><strong>Ativo:</strong> ${p.active ? 'Sim' : 'Não'}</div>
-          <div><strong>Meta:</strong> Peso ${p.meta?.weightGrams || 0}g • Marca: ${escapeHtml(p.meta?.brand || '—')}</div>
-          <div><strong>Criado em:</strong> ${formatDate(p.createdAt)}</div>
-          <div><strong>Atualizado em:</strong> ${formatDate(p.updatedAt)}</div>
-        </div>
+        <div class="list-details"> ... </div>
       </div>
     `).join('');
 
-    // Toggle detalhes
+    // clicar no item → lista expande
     listPane.querySelectorAll('.list-item').forEach(item => {
       const header = item.querySelector('.list-header');
       header.addEventListener('click', e => {
@@ -574,19 +584,19 @@ const UI = {
         const isOpen = item.classList.contains('open');
         listPane.querySelectorAll('.list-item.open').forEach(other => other.classList.remove('open'));
         if (!isOpen) item.classList.add('open');
-        this.panelEl.classList.add('form-collapsed');
-        this.panelEl.classList.remove('list-collapsed');
+        this.setPanelState('list-focus'); // desktop: lista maior, form menor
       });
     });
 
-    // Botão editar
+    // botão editar → renderiza form e expande
     listPane.querySelectorAll('[data-action="edit"]').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = btn.closest('.list-item').dataset.id;
         const doc = arr.find(x => x.id === id);
         this.renderProductForm(doc);
-        if (window.innerWidth <= 1000) this.setPanelState('form-focus');
-        else this.panelEl.classList.add('list-collapsed');
+        this.setPanelState('form-focus'); // desktop: form maior, lista menor
+
+        // foca primeiro input
         setTimeout(() => {
           const firstInput = document.getElementById('formPane').querySelector('input, textarea, select');
           if (firstInput) firstInput.focus();
