@@ -18,8 +18,7 @@ const {
   serverTimestamp
 } = window.Firebase;
 
-export const CRUD = {
-  // read once (array of docs)
+/*
   async read(collectionPath, orderField = 'createdAt') {
     const colRef = collectionPathToRef(collectionPath);
     try {
@@ -35,6 +34,23 @@ export const CRUD = {
       console.error('CRUD.read', err);
       throw err;
     }
+      */
+
+export const CRUD = {
+  // read once (array of docs)
+    async read(collectionPath, orderField = 'createdAt') {
+      const colRef = collectionPathToRef(collectionPath);
+      try {
+        const q = orderField ? query(colRef, orderBy(orderField)) : colRef;
+        const snap = await getDocs(q);
+
+        if (snap.empty) return []; // garante retorno consistente
+
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (err) {
+        console.error('CRUD.read', err);
+        throw err;
+      }
   },
 
   // subscribe to changes, returns unsubscribe function

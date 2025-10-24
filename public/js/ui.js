@@ -341,7 +341,8 @@ const UI = {
           <div><strong>Endereço alternativo:</strong> ${escapeHtml(formatAddr(c.alternateAddress))}</div>
           <div><strong>Endereço de envio:</strong> ${escapeHtml(formatAddr(c.shippingAddress))}</div>
           <div><strong>Endereço de cobrança:</strong> ${escapeHtml(formatAddr(c.billingAddress))}</div>
-          <div><strong>Criado em:</strong> ${c.createdAt ? new Date(c.createdAt).toLocaleString() : '—'}</div>
+          <div><strong>Criado em:</strong> ${formatDate(c.createdAt)}</div>
+          <div><strong>Atualizado em:</strong> ${formatDate(c.updatedAt)}</div>
         </div>
       </div>
     `).join('');
