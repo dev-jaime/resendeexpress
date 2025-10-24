@@ -112,7 +112,6 @@ const UI = {
 
   // função que gerencia classes de foco / estado do painel
   //funcao mais recente, fucionou muito bem tambem
-  /*
   setPanelState(state) {
     if (!this.panelEl) return;
 
@@ -142,9 +141,9 @@ const UI = {
     }
     // 'default' = sem classes adicionais (painel volta ao estado padrão)
   },
-  */
 
   //classe atual
+  /*
   setPanelState(state) {
     if (!this.panelEl) return;
 
@@ -163,7 +162,7 @@ const UI = {
     }
     // 'default' = sem classes adicionais (já removidas)
   },
-  
+  */
 
   renderCustomerForm(data = null) {
     const formPane = document.getElementById('formPane');
@@ -194,6 +193,7 @@ const UI = {
     });
 
     // Quando perder todo foco dentro do form, voltamos ao estado de lista
+    /*
     form.addEventListener('focusout', () => {
       // delay curto para permitir foco em outro elemento do form (p.ex. tabindex)
       setTimeout(() => {
@@ -203,6 +203,7 @@ const UI = {
         }
       }, 50);
     });
+    */
 
     // Quando clicar em um item da lista para abrir detalhes → lista cresce, form encolhe
     listPane.querySelectorAll('.list-item').forEach(item => {
