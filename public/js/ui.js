@@ -226,7 +226,11 @@ const UI = {
 
     if (data) {
       document.getElementById('delCustomer').addEventListener('click', async () => {
-        if (!confirm('Remover cliente?')) return;
+        //if (!confirm('Remover cliente?')) return;
+        if (!(await showConfirmModal({
+          title: 'Remover cliente',
+          message: `Deseja realmente remover ${data.name || 'este cliente'}?`
+        }))) return;
         const path = `${this.companyPath}/customers`;
         await window.CRUD.delete(path, data.id);
         this.renderCustomerForm();
@@ -545,7 +549,16 @@ const UI = {
     // deletar
     if (data) {
       document.getElementById('delProduct').addEventListener('click', async () => {
-        if (!confirm('Remover produto?')) return;
+        //if (!confirm('Remover produto?')) return;
+        const confirm = await showConfirmModal({
+          title: 'Remover produto',
+          message: `Deseja realmente remover ${
+            data?.name ? `<strong>"${data.name}"</strong>` : 'este produto'
+          }?`,
+          confirmText: 'Remover',
+          cancelText: 'Cancelar'
+        });
+        if (!confirm) return;
         await window.CRUD.delete(`${this.companyPath}/products`, data.id);
         this.renderProductForm();
       });
@@ -572,7 +585,20 @@ const UI = {
             <button class="btn small" data-action="edit">Editar</button>
           </div>
         </div>
-        <div class="list-details"> ... </div>
+        <div class="list-details">
+          <div><strong>EAN:</strong> ${escapeHtml(p.ean || '—')}</div>
+          <div><strong>Descrição:</strong> ${escapeHtml(p.description || '—')}</div>
+          <div><strong>Unidade:</strong> ${escapeHtml(p.unit || '—')}</div>
+          <div><strong>Imagens:</strong> ${escapeHtml((p.images || []).join(', '))}</div>
+          <div><strong>Categorias:</strong> ${escapeHtml((p.categories || []).join(', '))}</div>
+          <div><strong>Disponível online:</strong> ${p.availableOnline ? 'Sim' : 'Não'}</div>
+          <div><strong>ID Catálogo WA:</strong> ${escapeHtml(p.whatsappCatalogId || '—')}</div>
+          <div><strong>Visibilidade:</strong> ${escapeHtml(p.visibility || '—')}</div>
+          <div><strong>Ativo:</strong> ${p.active ? 'Sim' : 'Não'}</div>
+          <div><strong>Meta:</strong> Peso ${p.meta?.weightGrams || 0}g • Marca: ${escapeHtml(p.meta?.brand || '—')}</div>
+          <div><strong>Criado em:</strong> ${formatDate(p.createdAt)}</div>
+          <div><strong>Atualizado em:</strong> ${formatDate(p.updatedAt)}</div>
+        </div>
       </div>
     `).join('');
 
@@ -725,6 +751,67 @@ function formatDate(ts, timeZone = undefined) {
     // fallback simples
     return d.toLocaleString();
   }
+}
+
+// ===============
+// MODAL DE CONFIRMAÇÃO PADRÃO
+// ===============
+async function showConfirmModal({ title = 'Confirmar ação', message = '', confirmText = 'Confirmar', cancelText = 'Cancelar' } = {}) {
+  return new Promise((resolve) => {
+    // Cria o backdrop e o conteúdo do modal
+    const modal = document.createElement('div');
+    modal.className = 'modal-backdrop';
+    modal.innerHTML = `
+      <div class="modal">
+        <h3 class="modal-title">${title}</h3>
+        <p class="modal-message"></p>
+        <div class="modal-actions">
+          <button class="btn outline cancel-btn">${cancelText}</button>
+          <button class="btn danger confirm-btn">${confirmText}</button>
+        </div>
+      </div>
+    `;
+
+    // Insere o HTML da mensagem (permite <strong>, <em>, etc.)
+    const messageEl = modal.querySelector('.modal-message');
+    messageEl.innerHTML = message;
+
+    document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
+
+    // Foco automático no botão confirmar
+    const confirmBtn = modal.querySelector('.confirm-btn');
+    const cancelBtn = modal.querySelector('.cancel-btn');
+    confirmBtn.focus();
+
+    // === Fechamento e retorno ===
+    const close = (result) => {
+      modal.classList.add('closing');
+      setTimeout(() => {
+        modal.remove();
+        document.body.classList.remove('modal-open');
+        resolve(result);
+      }, 150);
+    };
+
+    // Eventos de clique
+    confirmBtn.addEventListener('click', () => close(true));
+    cancelBtn.addEventListener('click', () => close(false));
+
+    // Fecha com ESC ou Enter
+    modal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close(false);
+      if (e.key === 'Enter') close(true);
+    });
+
+    // Captura teclas enquanto o modal estiver aberto
+    confirmBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close(false);
+    });
+    cancelBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') close(true);
+    });
+  });
 }
 
 // expose UI globally

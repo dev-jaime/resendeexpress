@@ -135,7 +135,7 @@
 .panel.list-collapsed { --left-width: 35%; }
 .panel.form-collapsed { --left-width: 75%; }
 .panel.form-focus { --left-width: 35%; } /* lista diminui, form expande */
-.panel.list-focus { --left-width: 65%; } /* lista maior, form menor */
+.panel.list-focus { --left-width: 75%; } /* lista maior, form menor */
 
 /* Tablet - empilhamento com "split inteligente" */
 @media (max-width: 1000px) {
@@ -356,4 +356,68 @@
 .panel-left::-webkit-scrollbar-thumb:hover,
 .panel-right::-webkit-scrollbar-thumb:hover {
   background-color: #94a3b8;
+}
+
+/* ==============================
+   MODAL DE CONFIRMAÇÃO
+============================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px 28px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.15);
+  animation: slideUp 0.25s ease;
+}
+
+.modal-title {
+  font-size: 1.2em;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.modal-message {
+  color: #374151;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.modal-message strong {
+  font-weight: 700;
+  color: #111827;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-backdrop.closing {
+  animation: fadeOut 0.15s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }

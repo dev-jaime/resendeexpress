@@ -42,6 +42,18 @@
     </main>
   </div>
 
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <h4 id="confirmTitle">Confirmar ação</h4>
+      <p id="confirmMessage">Deseja realmente prosseguir?</p>
+      <div class="modal-actions">
+        <button id="confirmCancel" class="btn outline">Cancelar</button>
+        <button id="confirmOk" class="btn danger">Remover</button>
+      </div>
+    </div>
+  </div>
+
   <!-- scripts -->
   <script type="module" src="./js/firebase.js"></script>
   <script type="module" src="./js/session.js"></script>
