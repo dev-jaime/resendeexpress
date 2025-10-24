@@ -111,7 +111,8 @@ const UI = {
   },
 
   // função que gerencia classes de foco / estado do painel
-  // função que gerencia classes de foco / estado do painel
+  //funcao mais recente, fucionou muito bem tambem
+  /*
   setPanelState(state) {
     if (!this.panelEl) return;
 
@@ -141,8 +142,9 @@ const UI = {
     }
     // 'default' = sem classes adicionais (painel volta ao estado padrão)
   },
+  */
 
-  /*
+  //classe atual
   setPanelState(state) {
     if (!this.panelEl) return;
 
@@ -161,7 +163,7 @@ const UI = {
     }
     // 'default' = sem classes adicionais (já removidas)
   },
-  */
+  
 
   renderCustomerForm(data = null) {
     const formPane = document.getElementById('formPane');
